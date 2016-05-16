@@ -1,0 +1,100 @@
+---
+title: "Word Learning"
+author: "Kimberly A. Brink"
+date: "March 9, 2016"
+output: html_document
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path='Figures/', dev=c('png','postscript'), fig.width = 8, fig.height = 8, echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r libraries}
+#library(extrafont)
+library(lubridate)
+library(Hmisc)
+#library(knitr)
+options("scipen"=100, "digits"= 4)
+
+```
+
+```{r formatting}
+WL.A <- subset(qualtrics.WL, Condition==1 & AccurateRobot=='Purple')
+WL.B <- subset(qualtrics.WL, Condition==2 & AccurateRobot=='Purple')
+WL.C <- subset(qualtrics.WL, Condition==1 & AccurateRobot=='Orange')
+WL.D <- subset(qualtrics.WL, Condition==2 & AccurateRobot=='Orange')
+
+WL.A <- WL.A[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")] 
+
+WL.B <- WL.B[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.1","Fam1_TEXT.1","Fam2.1","Fam2_TEXT.1","Fam3.1","Fam3_TEXT.1","Fam4.1","Fam4_TEXT.1","EJ1.1","Ask1A.1","Ask1A_TEXT.1","Ask1B.1","Ask1C.1","Ask2A.1","Ask2A_TEXT.1","Ask2B.1","Ask2C.1","Ask3A.1","Ask3A_TEXT.1","Ask3B.1","Ask3C.1","Ask4A.1","Ask4A_TEXT.1","Ask4B.1","Ask4C.1","EJ2.1","Audio_file","Comments")] 
+
+WL.C <- WL.C[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.2","Fam1_TEXT.2","Fam2.2","Fam2_TEXT.2","Fam3.2","Fam3_TEXT.2","Fam4.2","Fam4_TEXT.2","EJ1.2","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")] 
+
+WL.D <- WL.D[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.3","Fam1_TEXT.3","Fam2.3","Fam2_TEXT.3","Fam3.3","Fam3_TEXT.3","Fam4.3","Fam4_TEXT.3","EJ1.3","Ask1A.1","Ask1A_TEXT.1","Ask1B.1","Ask1C.1","Ask2A.1","Ask2A_TEXT.1","Ask2B.1","Ask2C.1","Ask3A.1","Ask3A_TEXT.1","Ask3B.1","Ask3C.1","Ask4A.1","Ask4A_TEXT.1","Ask4B.1","Ask4C.1","EJ2.1","Audio_file","Comments")] 
+
+names(WL.A) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")
+
+names(WL.B) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")
+
+names(WL.C) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")
+
+names(WL.D) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")
+
+WL.A$Order = "A"
+#WL.B$Order = "B"
+#WL.C$Order = "C"
+WL.D$Order = "D"
+
+WL <- rbind(WL.A,WL.B,WL.C,WL.D)
+```
+
+```{r preprocessing}
+WL[ WL == "" ] = NA
+
+WL$AccurateRobot = factor(WL$AccurateRobot)
+WL$EJ1 = factor(WL$EJ1)
+WL$EJ2 = factor(WL$EJ2)
+
+WL$Ask1B = factor(WL$Ask1B)
+WL$Ask2B = factor(WL$Ask2B)
+WL$Ask3B = factor(WL$Ask3B)
+WL$Ask4B = factor(WL$Ask4B)
+
+WL$Ask1C = factor(WL$Ask1C)
+WL$Ask2C = factor(WL$Ask1C)
+WL$Ask3C = factor(WL$Ask3C)
+WL$Ask4C = factor(WL$Ask4C)
+```
+
+```{r print}
+head(WL[,5:37])
+```
+
+```{r variables}
+WL$DOB = mdy(WL$DOB)
+WL$DOT = mdy(WL$DOT)
+WL$age = year(as.period(new_interval(WL$DOB, WL$DOT)))*12 + month(as.period(new_interval(WL$DOB, WL$DOT))) + day(as.period(new_interval(WL$DOB, WL$DOT)))/30
+
+WL$Fam.Match = ifelse(WL$Fam1=="Brush",1,0) + ifelse(WL$Fam1=="Doll",1,0) + ifelse(WL$Fam1=="Ball",1,0) + ifelse(WL$Fam1=="Bear",1,0)
+
+WL$EJ.Match = ifelse(WL$EJ1==WL$AccurateRobot,1,0) + ifelse(WL$EJ2==WL$AccurateRobot,1,0)
+
+WL$Ask.Match = ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0)
+
+WL$Word.Match = ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0)
+```
+ 
+```{r descriptives}
+summary(WL$age)
+table(WL$Order)
+summary(WL$Fam.Match)
+summary(WL$EJ.Match)
+summary(WL$Ask.Match)
+summary(WL$Word.Match)
+```
+
+```{r predictors}
+
+```
+
+ 
