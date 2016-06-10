@@ -18,31 +18,54 @@ options("scipen"=100, "digits"= 4)
 
 ```
 
+
+```{r import}
+ getSurveyResults <- function (version, request, username, token, format, surveyid,exportTags,labels)
+ {
+     url = paste("https://umich.qualtrics.com//WRAPI/ControlPanel/api.php?API_SELECT=ControlPanel", 
+                 '&Version=', version,
+                 '&Request=', request,
+                 '&User=', username,
+                 '&Token=', token,
+                 '&Format=', format,
+                 "&SurveyID=", surveyid,
+                 "&ExportTags=", exportTags,
+                 "&Labels=", labels,
+                 "&UnansweredRecode=-99",sep='')
+ 
+     t = read.csv(url)
+     for (i in 1:10){ names(t)[i] <- as.character(t[1,i]) }
+     t<-t[-1,]
+ }
+ 
+qualtrics.WL <- getSurveyResults(version, request, username, token, format, surveyID, exportTags, labels)
+```
+
 ```{r formatting}
 WL.A <- subset(qualtrics.WL, Condition==1 & AccurateRobot=='Purple')
 WL.B <- subset(qualtrics.WL, Condition==2 & AccurateRobot=='Purple')
 WL.C <- subset(qualtrics.WL, Condition==1 & AccurateRobot=='Orange')
 WL.D <- subset(qualtrics.WL, Condition==2 & AccurateRobot=='Orange')
 
-WL.A <- WL.A[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")] 
+WL.A <- WL.A[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")] 
 
-WL.B <- WL.B[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.1","Fam1_TEXT.1","Fam2.1","Fam2_TEXT.1","Fam3.1","Fam3_TEXT.1","Fam4.1","Fam4_TEXT.1","EJ1.1","Ask1A.1","Ask1A_TEXT.1","Ask1B.1","Ask1C.1","Ask2A.1","Ask2A_TEXT.1","Ask2B.1","Ask2C.1","Ask3A.1","Ask3A_TEXT.1","Ask3B.1","Ask3C.1","Ask4A.1","Ask4A_TEXT.1","Ask4B.1","Ask4C.1","EJ2.1","Audio_file","Comments")] 
+WL.B <- WL.B[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.2","Fam1_TEXT.2","Fam2.2","Fam2_TEXT.2","Fam3.2","Fam3_TEXT.2","Fam4.2","Fam4_TEXT.2","EJ1.2","Ask1A.1","Ask1A_TEXT.1","Ask1B.1","Ask1C.1","Ask2A.1","Ask2A_TEXT.1","Ask2B.1","Ask2C.1","Ask3A.1","Ask3A_TEXT.1","Ask3B.1","Ask3C.1","Ask4A.1","Ask4A_TEXT.1","Ask4B.1","Ask4C.1","EJ2.1","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")]
 
-WL.C <- WL.C[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.2","Fam1_TEXT.2","Fam2.2","Fam2_TEXT.2","Fam3.2","Fam3_TEXT.2","Fam4.2","Fam4_TEXT.2","EJ1.2","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")] 
+WL.C <- WL.C[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.1","Fam1_TEXT.1","Fam2.1","Fam2_TEXT.1","Fam3.1","Fam3_TEXT.1","Fam4.1","Fam4_TEXT.1","EJ1.1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")] 
 
-WL.D <- WL.D[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.3","Fam1_TEXT.3","Fam2.3","Fam2_TEXT.3","Fam3.3","Fam3_TEXT.3","Fam4.3","Fam4_TEXT.3","EJ1.3","Ask1A.1","Ask1A_TEXT.1","Ask1B.1","Ask1C.1","Ask2A.1","Ask2A_TEXT.1","Ask2B.1","Ask2C.1","Ask3A.1","Ask3A_TEXT.1","Ask3B.1","Ask3C.1","Ask4A.1","Ask4A_TEXT.1","Ask4B.1","Ask4C.1","EJ2.1","Audio_file","Comments")] 
+WL.D <- WL.D[, c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1.3","Fam1_TEXT.3","Fam2.3","Fam2_TEXT.3","Fam3.3","Fam3_TEXT.3","Fam4.3","Fam4_TEXT.3","EJ1.3","Ask1A.1","Ask1A_TEXT.1","Ask1B.1","Ask1C.1","Ask2A.1","Ask2A_TEXT.1","Ask2B.1","Ask2C.1","Ask3A.1","Ask3A_TEXT.1","Ask3B.1","Ask3C.1","Ask4A.1","Ask4A_TEXT.1","Ask4B.1","Ask4C.1","EJ2.1","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")]
 
-names(WL.A) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")
+names(WL.A) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")
 
-names(WL.B) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")
+names(WL.B) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")
 
-names(WL.C) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")
+names(WL.C) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")
 
-names(WL.D) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","Audio_file","Comments")
+names(WL.D) <- c("ResponseID","StartDate","Finished","Condition","AccurateRobot","Subject","Sex","DOB","DOT","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")
 
 WL.A$Order = "A"
-#WL.B$Order = "B"
-#WL.C$Order = "C"
+WL.B$Order = "B"
+WL.C$Order = "C"
 WL.D$Order = "D"
 
 WL <- rbind(WL.A,WL.B,WL.C,WL.D)
@@ -50,6 +73,7 @@ WL <- rbind(WL.A,WL.B,WL.C,WL.D)
 
 ```{r preprocessing}
 WL[ WL == "" ] = NA
+WL[ WL == -99 ] = NA
 
 WL$AccurateRobot = factor(WL$AccurateRobot)
 WL$EJ1 = factor(WL$EJ1)
@@ -73,14 +97,17 @@ head(WL[,5:37])
 ```{r variables}
 WL$DOB = mdy(WL$DOB)
 WL$DOT = mdy(WL$DOT)
-WL$age = year(as.period(new_interval(WL$DOB, WL$DOT)))*12 + month(as.period(new_interval(WL$DOB, WL$DOT))) + day(as.period(new_interval(WL$DOB, WL$DOT)))/30
+WL$age = year(as.period(interval(WL$DOB, WL$DOT)))*12 + month(as.period(interval(WL$DOB, WL$DOT))) + day(as.period(interval(WL$DOB, WL$DOT)))/30
 
-WL$Fam.Match = ifelse(WL$Fam1=="Brush",1,0) + ifelse(WL$Fam1=="Doll",1,0) + ifelse(WL$Fam1=="Ball",1,0) + ifelse(WL$Fam1=="Bear",1,0)
+WL$Fam.Match = ifelse(WL$Fam1=="Brush",1,0) + ifelse(WL$Fam2=="Doll",1,0) + ifelse(WL$Fam3=="Ball",1,0) + ifelse(WL$Fam4=="Bear",1,0)
 
-WL$EJ.Match = ifelse(WL$EJ1==WL$AccurateRobot,1,0) + ifelse(WL$EJ2==WL$AccurateRobot,1,0)
+#Whether the robot they said was bad at answering 
+WL$EJ.Match = ifelse(WL$EJ1!=WL$AccurateRobot,1,0) + ifelse(WL$EJ2!=WL$AccurateRobot,1,0)
 
+#Whether they said they would ask the accurate robot
 WL$Ask.Match = ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0)
 
+#Whether the word that they chose in test matched the word that the accurate robot said
 WL$Word.Match = ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0)
 ```
  
@@ -91,10 +118,44 @@ summary(WL$Fam.Match)
 summary(WL$EJ.Match)
 summary(WL$Ask.Match)
 summary(WL$Word.Match)
+
+hist(WL$Fam.Match)
+hist(WL$EJ.Match)
+hist(WL$Ask.Match)
+hist(WL$Word.Match)
 ```
 
 ```{r predictors}
 
+WL$THINK.score = ifelse(WL$THINK=="No",0,ifelse(WL$THINK=="A little bit",1,ifelse(WL$THINK=="A medium amount",2,ifelse(WL$THINK=="A lot",3,NA))))
+WL$MORAL.score = ifelse(WL$MORAL=="No",0,ifelse(WL$MORAL=="A little bit",1,ifelse(WL$MORAL=="A medium amount",2,ifelse(WL$MORAL=="A lot",3,NA))))
+WL$CHOOSE.score = ifelse(WL$CHOOSE=="No",0,ifelse(WL$CHOOSE=="A few things",1,ifelse(WL$CHOOSE=="A medium amount of things",2,ifelse(WL$CHOOSE=="A lot of things",3,NA))))
+WL$PAIN.score = ifelse(WL$PAIN=="No",0,ifelse(WL$PAIN=="A little bit",1,ifelse(WL$PAIN=="A medium amount",2,ifelse(WL$PAIN=="A lot",3,NA))))
+WL$SCARED.score = ifelse(WL$SCARED=="No",0,ifelse(WL$SCARED=="A little bit",1,ifelse(WL$SCARED=="A medium amount",2,ifelse(WL$SCARED=="A lot",3,NA))))
+WL$HUNGRY.score = ifelse(WL$HUNGRY=="No",0,ifelse(WL$HUNGRY=="A little bit",1,ifelse(WL$HUNGRY=="A medium amount",2,ifelse(WL$HUNGRY=="A lot",3,NA))))
+
+WL$AgIndex = (WL$THINK.score + WL$MORAL.score + WL$CHOOSE.score)/3
+WL$ExpIndex = (WL$PAIN.score + WL$SCARED.score + WL$HUNGRY.score)/3
 ```
 
- 
+```{r correlations}
+plot(jitter(WL$Word.Match),jitter(WL$AgIndex))
+plot(jitter(WL$Ask.Match),jitter(WL$AgIndex))
+plot(jitter(WL$EJ.Match),jitter(WL$AgIndex))
+plot(jitter(WL$ExpIndex),jitter(WL$AgIndex))
+
+plot(jitter(WL$Word.Match),jitter(WL$ExpIndex))
+plot(jitter(WL$Ask.Match),jitter(WL$ExpIndex))
+plot(jitter(WL$EJ.Match),jitter(WL$ExpIndex))
+
+cor.test(WL$Word.Match,WL$ExpIndex)
+cor.test(WL$Ask.Match,WL$ExpIndex)
+cor.test(WL$EJ.Match,WL$ExpIndex)
+cor.test(WL$AgIndex,WL$ExpIndex)
+
+cor.test(WL$Word.Match,WL$AgIndex)
+cor.test(WL$Ask.Match,WL$AgIndex)
+cor.test(WL$EJ.Match,WL$AgIndex)
+
+summary(lm(EJ.Match~ExpIndex+AgIndex,data=WL))
+```
