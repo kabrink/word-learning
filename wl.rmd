@@ -22,10 +22,10 @@ options("scipen"=100, "digits"= 4)
 ```{r import}
  version = '2.5'
  request = 'getLegacyResponseData'
- username = 'kabrink%23umich'
- token = 'EV1NOq9slwpxgpJuZuOoUl8c9hjmqUGGNPDEz95A'
+ username = ''
+ token = ''
  format = 'CSV'
- surveyID = 'SV_5p7N0qM3pPb1LUh'
+ surveyID = ''
  exportTags = '1'
  labels = '1'
  UnansweredRecode = '-99'
