@@ -20,6 +20,16 @@ options("scipen"=100, "digits"= 4)
 
 
 ```{r import}
+ version = '2.5'
+ request = 'getLegacyResponseData'
+ username = 'kabrink%23umich'
+ token = 'EV1NOq9slwpxgpJuZuOoUl8c9hjmqUGGNPDEz95A'
+ format = 'CSV'
+ surveyID = 'SV_5p7N0qM3pPb1LUh'
+ exportTags = '1'
+ labels = '1'
+ UnansweredRecode = '-99'
+ 
  getSurveyResults <- function (version, request, username, token, format, surveyid,exportTags,labels)
  {
      url = paste("https://umich.qualtrics.com//WRAPI/ControlPanel/api.php?API_SELECT=ControlPanel", 
@@ -90,10 +100,6 @@ WL$Ask3C = factor(WL$Ask3C)
 WL$Ask4C = factor(WL$Ask4C)
 ```
 
-```{r print}
-head(WL[,5:37])
-```
-
 ```{r variables}
 WL$DOB = mdy(WL$DOB)
 WL$DOT = mdy(WL$DOT)
@@ -102,31 +108,69 @@ WL$age = year(as.period(interval(WL$DOB, WL$DOT)))*12 + month(as.period(interval
 WL$Fam.Match = ifelse(WL$Fam1=="Brush",1,0) + ifelse(WL$Fam2=="Doll",1,0) + ifelse(WL$Fam3=="Ball",1,0) + ifelse(WL$Fam4=="Bear",1,0)
 
 #Whether the robot they said was bad at answering 
-WL$EJ.Match = ifelse(WL$EJ1!=WL$AccurateRobot,1,0) + ifelse(WL$EJ2!=WL$AccurateRobot,1,0)
+WL$EJ.Match = (ifelse(WL$EJ1!=WL$AccurateRobot,1,0) + ifelse(WL$EJ2!=WL$AccurateRobot,1,0))/2
 
 #Whether they said they would ask the accurate robot
-WL$Ask.Match = ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0)
+WL$Ask.Match = (ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0))/4
 
 #Whether the word that they chose in test matched the word that the accurate robot said
-WL$Word.Match = ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0)
+WL$Word.Match = (ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0))/4
 ```
  
+##Demographics
+```{r demographics}
+isGirl <- WL$Sex == "Female"
+```
+
+There are `r dim(WL)[1]` participants.
+
+The average age of the sample is `r round(mean(WL$age), digits = 2)` months.
+
+The median age of the sample is `r round(median(WL$age), digits = 2)` months.
+
+The minimum age of the sample is `r round(min(WL$age), digits = 2)` months.
+
+The maximum age of the sample is `r round(max(WL$age), digits = 2)` months.
+
+There are `r sum(isGirl)` females in the sample.
+
+The first date of test was `r min(WL$DOT)`.
+
+The most recent date of test was `r max(WL$DOT)`.
+
 ```{r descriptives}
 summary(WL$age)
 table(WL$Order)
-summary(WL$Fam.Match)
-summary(WL$EJ.Match)
-summary(WL$Ask.Match)
-summary(WL$Word.Match)
+```
 
+##Performance during accuracy trials 
+```{r accuracy_trials}
+summary(WL$Fam.Match)
 hist(WL$Fam.Match)
+```
+
+```{r familiarization_error}
+WL = WL[which(WL$Fam.Match==4),]
+```
+Now there are `r dim(WL)[1]` participants after removing for familiarization errors. 
+
+#Comparisons with chance for three test questions.
+```{r}
+summary(WL$EJ.Match)
 hist(WL$EJ.Match)
+
+summary(WL$Ask.Match)
 hist(WL$Ask.Match)
+
+summary(WL$Word.Match)
 hist(WL$Word.Match)
+
+t.test(WL$EJ.Match,mu=.5) # Ho: mu=0.5
+t.test(WL$Ask.Match,mu=.5)
+t.test(WL$Word.Match,mu=.5)
 ```
 
 ```{r predictors}
-
 WL$THINK.score = ifelse(WL$THINK=="No",0,ifelse(WL$THINK=="A little bit",1,ifelse(WL$THINK=="A medium amount",2,ifelse(WL$THINK=="A lot",3,NA))))
 WL$MORAL.score = ifelse(WL$MORAL=="No",0,ifelse(WL$MORAL=="A little bit",1,ifelse(WL$MORAL=="A medium amount",2,ifelse(WL$MORAL=="A lot",3,NA))))
 WL$CHOOSE.score = ifelse(WL$CHOOSE=="No",0,ifelse(WL$CHOOSE=="A few things",1,ifelse(WL$CHOOSE=="A medium amount of things",2,ifelse(WL$CHOOSE=="A lot of things",3,NA))))
@@ -139,23 +183,28 @@ WL$ExpIndex = (WL$PAIN.score + WL$SCARED.score + WL$HUNGRY.score)/3
 ```
 
 ```{r correlations}
-plot(jitter(WL$Word.Match),jitter(WL$AgIndex))
-plot(jitter(WL$Ask.Match),jitter(WL$AgIndex))
-plot(jitter(WL$EJ.Match),jitter(WL$AgIndex))
 plot(jitter(WL$ExpIndex),jitter(WL$AgIndex))
-
-plot(jitter(WL$Word.Match),jitter(WL$ExpIndex))
-plot(jitter(WL$Ask.Match),jitter(WL$ExpIndex))
-plot(jitter(WL$EJ.Match),jitter(WL$ExpIndex))
-
-cor.test(WL$Word.Match,WL$ExpIndex)
-cor.test(WL$Ask.Match,WL$ExpIndex)
-cor.test(WL$EJ.Match,WL$ExpIndex)
 cor.test(WL$AgIndex,WL$ExpIndex)
 
+plot(jitter(WL$Word.Match),jitter(WL$AgIndex))
 cor.test(WL$Word.Match,WL$AgIndex)
+
+plot(jitter(WL$Ask.Match),jitter(WL$AgIndex))
 cor.test(WL$Ask.Match,WL$AgIndex)
+
+plot(jitter(WL$EJ.Match),jitter(WL$AgIndex))
 cor.test(WL$EJ.Match,WL$AgIndex)
 
-summary(lm(EJ.Match~ExpIndex+AgIndex,data=WL))
+plot(jitter(WL$Word.Match),jitter(WL$ExpIndex))
+cor.test(WL$Word.Match,WL$ExpIndex)
+
+plot(jitter(WL$Ask.Match),jitter(WL$ExpIndex))
+cor.test(WL$Ask.Match,WL$ExpIndex)
+
+plot(jitter(WL$EJ.Match),jitter(WL$ExpIndex))
+cor.test(WL$EJ.Match,WL$ExpIndex)
+```
+
+```{r regressions}
+summary(lm(EJ.Match~ExpIndex+AgIndex+age+Sex,data=WL))
 ```
