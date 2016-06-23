@@ -19,7 +19,6 @@ library(Hmisc)
 options("scipen"=100, "digits"= 4)
 ```
 
-
 ```{r import}
 #Import results from qualtrics using the qualtrics API (username, token, and surveyID removed)
 #https://api.qualtrics.com/
@@ -134,8 +133,13 @@ WL$EJ.Match = (ifelse(WL$EJ1!=WL$AccurateRobot,1,0) + ifelse(WL$EJ2!=WL$Accurate
 #Calculate the proportion of answers where children said they would ask the accurate robot for the name of the novel object
 WL$Ask.Match = (ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0))/4
 
+WL$Ask.bin = ifelse(WL$Ask.Match <=.5, 0, 1)
+
 #Calculate the proportion of answers where children chose the same name that the accurate robot chose
 WL$Word.Match = (ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0))/4
+
+WL$Word.bin = ifelse(WL$Word.Match <=.5, 0, 1)
+
 ```
  
 ##Demographics
@@ -242,4 +246,10 @@ cor.test(WL$EJ.Match,WL$ExpIndex)
 ```{r regressions}
 #assess which predictors predict responses to test questions
 summary(lm(EJ.Match~ExpIndex+AgIndex+age+Sex,data=WL))
+summary(lm(Ask.Match~ExpIndex+AgIndex+age+Sex,data=WL))
+summary(lm(Word.Match~ExpIndex+AgIndex+age+Sex,data=WL))
+
+summary(lm(Ask.bin~ExpIndex+AgIndex+age+Sex,data=WL))
+summary(lm(Word.bin~ExpIndex+AgIndex+age+Sex,data=WL))
+
 ```
