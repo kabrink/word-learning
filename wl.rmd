@@ -11,11 +11,13 @@ output: html_document
 knitr::opts_chunk$set(fig.path='Figures/', dev=c('png','postscript'), fig.width = 8, fig.height = 8, echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
+```{r standard_error}
+s.error <- function(x) sd(x,na.rm=TRUE)/sqrt(length(x))
+```
+
 ```{r libraries}
-#library(extrafont)
 library(lubridate)
-library(Hmisc)
-#library(knitr)
+library(pander)
 options("scipen"=100, "digits"= 4)
 ```
 
@@ -25,8 +27,8 @@ options("scipen"=100, "digits"= 4)
 
  version = '2.5' #qualtrics version
  request = 'getLegacyResponseData' #Returns all of the response data for a survey in the original (legacy) data format.
- username = #hidden
- token = #hidden
+ username =  #hidden
+ token =  #hidden
  format = 'CSV' #comma-separated value format
  surveyID = #hidden
  exportTags = '1' #f 1 (true) the export tags will be used rather than the V labels. The default is 0.
@@ -100,6 +102,9 @@ WL <- rbind(WL.A,WL.B,WL.C,WL.D)
 WL[ WL == "" ] = NA
 WL[ WL == -99 ] = NA
 
+
+WL[WL$Subject == "010AnA",]$DOB = '06/13/2012'
+
 #Convert categorical variables to factors
 WL$AccurateRobot = factor(WL$AccurateRobot)
 WL$EJ1 = factor(WL$EJ1)
@@ -123,6 +128,8 @@ WL$DOT = mdy(WL$DOT)
 
 #Calculate the age of each participant in months
 WL$age = year(as.period(interval(WL$DOB, WL$DOT)))*12 + month(as.period(interval(WL$DOB, WL$DOT))) + day(as.period(interval(WL$DOB, WL$DOT)))/30
+
+WL$ageyears = WL$age/12
 
 #Calculate whether children accurately answered all familiarization trials.
 WL$Fam.Match = ifelse(WL$Fam1=="Brush",1,0) + ifelse(WL$Fam2=="Doll",1,0) + ifelse(WL$Fam3=="Ball",1,0) + ifelse(WL$Fam4=="Bear",1,0)
@@ -164,19 +171,26 @@ The first date of test was `r min(WL$DOT)`.
 
 The most recent date of test was `r max(WL$DOT)`.
 
+
 ```{r descriptives}
 #calculate summary statistics for age of sample
-summary(WL$age)
+panderOptions("digits", 4)
+pander(summary(WL$age), caption = 'Age(months)')
+hist(WL$age,main='',xlab='Age(months)')
+
+pander(summary(WL$ageyears), caption = 'Age(years)')
+hist(WL$ageyears, main='',xlab='Age(years)')
 
 #report how many participants completed each order of the survey
-table(WL$Order)
+pander(table(WL$Order),caption = 'Distribution by Order of Presentation')
 ```
 
 ##Performance during accuracy trials 
 ```{r accuracy_trials}
 #report summary statistics for performance during familiarization/accuracy trials
-summary(WL$Fam.Match)
-hist(WL$Fam.Match)
+pander(summary(WL$Fam.Match))
+hist(WL$Fam.Match,main='',xlab='Num correct')
+pander(table(WL$Fam.Match),caption='Participant Count by Number of Trials Correct')
 ```
 
 ```{r familiarization_error}
@@ -186,24 +200,62 @@ WL = WL[which(WL$Fam.Match==4),]
 Now there are `r dim(WL)[1]` participants after removing for familiarization errors. 
 
 #Comparisons with chance for three test questions.
-```{r}
+```{r performance}
 #Report summary statistics for accuracy on judgment questions
-summary(WL$EJ.Match)
-hist(WL$EJ.Match)
+pander(summary(WL$EJ.Match), caption='Proportion of Explicit Judgment Questions Correct')
+hist(WL$EJ.Match,main='',xlab='Proportion of explicit judgment correct')
 
 #Report summary statistics for accuracy on ask questions
-summary(WL$Ask.Match)
-hist(WL$Ask.Match)
+pander(summary(WL$Ask.Match),caption='Proportion of Ask Questions correct')
+hist(WL$Ask.Match,main='',xlab='Proportion of Ask Questions correct')
 
 #Report summary statistics for accuracy on endorse questions
-summary(WL$Word.Match)
-hist(WL$Word.Match)
+pander(summary(WL$Word.Match), caption = 'Proportion of Endorsement Questions correct')
+hist(WL$Word.Match, main='',xlab='Proportion of Endorsement Questions correct')
 
 #Compare performance to chance guessing
-t.test(WL$EJ.Match,mu=.5) # Ho: mu=0.5
-t.test(WL$Ask.Match,mu=.5)
-t.test(WL$Word.Match,mu=.5)
+EJ.ttest = t.test(WL$EJ.Match,mu=.5) # Ho: mu=0.5
+Ask.ttest = t.test(WL$Ask.Match,mu=.5)
+Word.ttest = t.test(WL$Word.Match,mu=.5)
+
+chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'), 
+                          Proportion = c(
+                            paste(round(EJ.ttest$estimate,2),
+                                  '(',round(s.error(WL$EJ.Match),2),')',sep=''), 
+                            paste(round(Ask.ttest$estimate,2),
+                                  '(',round(s.error(WL$Ask.Match),2),')',sep=''),
+                            paste(round(Word.ttest$estimate,2),
+                                  '(',round(s.error(WL$Word.Match),2),')',sep='')), 
+                          't(df)' = c(
+                            paste(round(EJ.ttest$statistic,2),
+                                  '(',round(EJ.ttest$parameter,2),')',sep=''), 
+                            paste(round(Ask.ttest$statistic,2),
+                                  '(',round(Ask.ttest$parameter,2),')',sep=''),
+                            paste(round(Word.ttest$statistic,2),
+                                  '(',round(Word.ttest$parameter,2),')',sep='')),
+                          '95%CI' = c(paste(round(EJ.ttest$conf.int[1],2),
+                                             round(EJ.ttest$conf.int[2],2),sep=","),
+                                       paste(round(Ask.ttest$conf.int[1],2),
+                                             round(Ask.ttest$conf.int[2],2),sep=","),
+                                       paste(round(Word.ttest$conf.int[1],2),
+                                             round(Word.ttest$conf.int[2],2),sep=","))
+                          )
+
+pander(chance.table,style = 'rmarkdown')
+
+#For future rmarkdown pdf use
+# \begin{center}
+#   \begin{tabular}{lccc}
+#     \hline
+#     Question & Proportion & t(`r EJ.ttest$parameter`) & 95\% CI\\
+#     \hline
+#     'Explicit judgment' & `r round(EJ.ttest$estimate,2)`(`r round(s.error(WL$EJ.Match),2)`) & `r round(EJ.ttest$statistic,2)` & `r round(EJ.ttest$conf.int,2)` \\
+#     Ask & `r round(Ask.ttest$estimate,2)`(`r round(s.error(WL$Ask.Match),2)`) & `r round(Ask.ttest$statistic,2)` & `r round(Ask.ttest$conf.int,2)` \\
+#     Endorse & `r round(Word.ttest$estimate,2)`(`r round(s.error(WL$Word.Match),2)`) & `r round(Word.ttest$statistic,2)` & `r round(Word.ttest$conf.int,2)` \\
+#   \end{tabular}
+# \end{center}
 ```
+
 
 ```{r predictors}
 #Recode perceptions of agency and experience questions
