@@ -27,10 +27,10 @@ options("scipen"=100, "digits"= 4)
 
  version = '2.5' #qualtrics version
  request = 'getLegacyResponseData' #Returns all of the response data for a survey in the original (legacy) data format.
- username =  #hidden
- token =  #hidden
+ username = 'kabrink%23umich' #hidden
+ token = 'EV1NOq9slwpxgpJuZuOoUl8c9hjmqUGGNPDEz95A' #hidden
  format = 'CSV' #comma-separated value format
- surveyID = #hidden
+ surveyID = 'SV_5p7N0qM3pPb1LUh' #hidden
  exportTags = '1' #f 1 (true) the export tags will be used rather than the V labels. The default is 0.
  labels = '1' #If 1 (true) the label for choices and answers will be used and not the id. The default is 0.
  UnansweredRecode = '-99' #missing value coding
@@ -127,9 +127,9 @@ WL$DOB = mdy(WL$DOB)
 WL$DOT = mdy(WL$DOT)
 
 #Calculate the age of each participant in months
-WL$age = year(as.period(interval(WL$DOB, WL$DOT)))*12 + month(as.period(interval(WL$DOB, WL$DOT))) + day(as.period(interval(WL$DOB, WL$DOT)))/30
+WL$Age = year(as.period(interval(WL$DOB, WL$DOT)))*12 + month(as.period(interval(WL$DOB, WL$DOT))) + day(as.period(interval(WL$DOB, WL$DOT)))/30
 
-WL$ageyears = WL$age/12
+WL$AgeYears = WL$Age/12
 
 #Calculate whether children accurately answered all familiarization trials.
 WL$Fam.Match = ifelse(WL$Fam1=="Brush",1,0) + ifelse(WL$Fam2=="Doll",1,0) + ifelse(WL$Fam3=="Ball",1,0) + ifelse(WL$Fam4=="Bear",1,0)
@@ -140,12 +140,12 @@ WL$EJ.Match = (ifelse(WL$EJ1!=WL$AccurateRobot,1,0) + ifelse(WL$EJ2!=WL$Accurate
 #Calculate the proportion of answers where children said they would ask the accurate robot for the name of the novel object
 WL$Ask.Match = (ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0))/4
 
-WL$Ask.bin = ifelse(WL$Ask.Match <=.5, 0, 1)
+WL$Ask.bin = ifelse(WL$Ask.Match <= mean(WL$Ask.Match,na.rm=T), 0, 1)
 
 #Calculate the proportion of answers where children chose the same name that the accurate robot chose
 WL$Word.Match = (ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0))/4
 
-WL$Word.bin = ifelse(WL$Word.Match <=.5, 0, 1)
+WL$Word.bin = ifelse(WL$Word.Match <= mean(WL$Word.Match,na.rm=T), 0, 1)
 
 ```
  
@@ -157,13 +157,13 @@ isGirl <- WL$Sex == "Female"
 
 There are `r dim(WL)[1]` participants.
 
-The average age of the sample is `r round(mean(WL$age), digits = 2)` months.
+The average age of the sample is `r round(mean(WL$Age), digits = 2)` months.
 
-The median age of the sample is `r round(median(WL$age), digits = 2)` months.
+The median age of the sample is `r round(median(WL$Age), digits = 2)` months.
 
-The minimum age of the sample is `r round(min(WL$age), digits = 2)` months.
+The minimum age of the sample is `r round(min(WL$Age), digits = 2)` months.
 
-The maximum age of the sample is `r round(max(WL$age), digits = 2)` months.
+The maximum age of the sample is `r round(max(WL$Age), digits = 2)` months.
 
 There are `r sum(isGirl)` females in the sample.
 
@@ -175,11 +175,11 @@ The most recent date of test was `r max(WL$DOT)`.
 ```{r descriptives}
 #calculate summary statistics for age of sample
 panderOptions("digits", 4)
-pander(summary(WL$age), caption = 'Age(months)')
-hist(WL$age,main='',xlab='Age(months)')
+pander(summary(WL$Age), caption = 'Age(months)')
+hist(WL$Age,main='',xlab='Age(months)')
 
-pander(summary(WL$ageyears), caption = 'Age(years)')
-hist(WL$ageyears, main='',xlab='Age(years)')
+pander(summary(WL$AgeYears), caption = 'Age(years)')
+hist(WL$AgeYears, main='',xlab='Age(years)')
 
 #report how many participants completed each order of the survey
 pander(table(WL$Order),caption = 'Distribution by Order of Presentation')
@@ -269,6 +269,8 @@ WL$HUNGRY.score = ifelse(WL$HUNGRY=="No",0,ifelse(WL$HUNGRY=="A little bit",1,if
 #Calculate aggregates of children's perceptions of the robots' agency and experience
 WL$AgIndex = (WL$THINK.score + WL$MORAL.score + WL$CHOOSE.score)/3
 WL$ExpIndex = (WL$PAIN.score + WL$SCARED.score + WL$HUNGRY.score)/3
+WL$AgIndex.cent = scale(WL$AgIndex,center=T,scale=F)
+WL$ExpIndex.cent = scale(WL$ExpIndex,center=T,scale=F)
 ```
 
 ```{r correlations}
@@ -297,11 +299,13 @@ cor.test(WL$EJ.Match,WL$ExpIndex)
 
 ```{r regressions}
 #assess which predictors predict responses to test questions
-summary(lm(EJ.Match~ExpIndex+AgIndex+age+Sex,data=WL))
-summary(lm(Ask.Match~ExpIndex+AgIndex+age+Sex,data=WL))
-summary(lm(Word.Match~ExpIndex+AgIndex+age+Sex,data=WL))
+summary(glm(EJ.Match~ExpIndex.cent+AgIndex.cent+Age,data=WL))
+summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent+Age,data=WL))
+summary(glm(Word.Match~ExpIndex.cent+AgIndex.cent+Age,data=WL))
 
-summary(lm(Ask.bin~ExpIndex+AgIndex+age+Sex,data=WL))
-summary(lm(Word.bin~ExpIndex+AgIndex+age+Sex,data=WL))
+summary(glm(Ask.bin~ExpIndex.cent+AgIndex.cent+Age+Sex+Order+AccurateRobot,data=WL,family="binomial"))
+summary(glm(Word.bin~ExpIndex.cent+AgIndex.cent+Age+Sex+Order+AccurateRobot,data=WL,family="binomial"))
 
+summary(glm(Ask.bin~ExpIndex.cent+AgIndex.cent+Age,data=WL,family="binomial"))
+summary(glm(Word.bin~ExpIndex.cent+AgIndex.cent+Age,data=WL,family="binomial"))
 ```
