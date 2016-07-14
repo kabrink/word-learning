@@ -59,7 +59,7 @@ qualtrics.WL <- getSurveyResults(version, request, username, token, format, surv
 ```
 
 ```{r formatting}
-#Clean the data set for analysis
+#Clean the data set
 
 #Subset the data set by condition (i.e., by the order in which the robots are presented and by which robot is accurate)
 WL.A <- subset(qualtrics.WL, Condition==1 & AccurateRobot=='Purple')
@@ -103,7 +103,7 @@ WL[ WL == "" ] = NA
 WL[ WL == -99 ] = NA
 
 
-WL[WL$Subject == "010AnA",]$DOB = '06/13/2012'
+WL[WL$Subject == "010AnA",]$DOB = '06/13/2012' #error in experimenter data entry
 
 #Convert categorical variables to factors
 WL$AccurateRobot = factor(WL$AccurateRobot)
@@ -140,12 +140,12 @@ WL$EJ.Match = (ifelse(WL$EJ1!=WL$AccurateRobot,1,0) + ifelse(WL$EJ2!=WL$Accurate
 #Calculate the proportion of answers where children said they would ask the accurate robot for the name of the novel object
 WL$Ask.Match = (ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0))/4
 
-WL$Ask.bin = ifelse(WL$Ask.Match <= mean(WL$Ask.Match,na.rm=T), 0, 1)
+WL$Ask.bin = factor(ifelse(WL$Ask.Match <= mean(WL$Ask.Match,na.rm=T), 0, 1))
 
 #Calculate the proportion of answers where children chose the same name that the accurate robot chose
 WL$Word.Match = (ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0))/4
 
-WL$Word.bin = ifelse(WL$Word.Match <= mean(WL$Word.Match,na.rm=T), 0, 1)
+WL$Word.bin = factor(ifelse(WL$Word.Match <= mean(WL$Word.Match,na.rm=T), 0, 1))
 
 ```
  
@@ -297,6 +297,16 @@ plot(jitter(WL$EJ.Match),jitter(WL$ExpIndex))
 cor.test(WL$EJ.Match,WL$ExpIndex)
 ```
 
+```{r classification_plots}
+plot(WL$Ask.bin,WL$AgIndex)
+plot(WL$Word.bin,WL$AgIndex)
+plot(WL$Ask.bin,WL$ExpIndex)
+plot(WL$Word.bin,WL$ExpIndex)
+plot(jitter(WL$ExpIndex),jitter(WL$AgIndex),col=(ifelse(WL$Ask.bin==1,'red','blue')), main = "Binary Ask Match")
+plot(jitter(WL$ExpIndex),jitter(WL$AgIndex),col=(ifelse(WL$Word.bin==1,'red','blue')), main = "Binary Word Match")
+```
+
+##Regression Analyses
 ```{r regressions}
 #assess which predictors predict responses to test questions
 summary(glm(EJ.Match~ExpIndex.cent+AgIndex.cent+Age,data=WL))
