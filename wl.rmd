@@ -18,7 +18,12 @@ s.error <- function(x) sd(x,na.rm=TRUE)/sqrt(length(x))
 ```{r libraries}
 library(lubridate)
 library(pander)
+library(MASS)
 options("scipen"=100, "digits"= 4)
+```
+
+```{r settings}
+color = rgb(249/255,175/255,61/255)
 ```
 
 ```{r import}
@@ -27,10 +32,10 @@ options("scipen"=100, "digits"= 4)
 
  version = '2.5' #qualtrics version
  request = 'getLegacyResponseData' #Returns all of the response data for a survey in the original (legacy) data format.
- username = #hidden
- token = #hidden
+ username = 'kabrink%23umich' #hidden
+ token = 'TmT146rdJKwI1BJOzPnmRN41S1ImfUt7vaDx5Zaq' #hidden
  format = 'CSV' #comma-separated value format
- surveyID = #hidden
+ surveyID = 'SV_5p7N0qM3pPb1LUh' #hidden
  exportTags = '1' #f 1 (true) the export tags will be used rather than the V labels. The default is 0.
  labels = '1' #If 1 (true) the label for choices and answers will be used and not the id. The default is 0.
  UnansweredRecode = '-99' #missing value coding
@@ -147,6 +152,9 @@ WL$Word.Match = (ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$Ac
 
 WL$Word.bin = factor(ifelse(WL$Word.Match <= mean(WL$Word.Match,na.rm=T), 0, 1))
 
+WL$Total = ((ifelse(WL$EJ1!=WL$AccurateRobot,1,0) + ifelse(WL$EJ2!=WL$AccurateRobot,1,0))+(ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0))+(ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0)))/10
+
+WL$Total.bin = factor(ifelse(WL$Total <= mean(WL$Total,na.rm=T), 0, 1))
 ```
  
 ##Demographics
@@ -176,10 +184,10 @@ The most recent date of test was `r max(WL$DOT)`.
 #calculate summary statistics for age of sample
 panderOptions("digits", 4)
 pander(summary(WL$Age), caption = 'Age(months)')
-hist(WL$Age,main='',xlab='Age(months)')
+hist(WL$Age,main='',xlab='Age(months)', col=color)
 
 pander(summary(WL$AgeYears), caption = 'Age(years)')
-hist(WL$AgeYears, main='',xlab='Age(years)')
+hist(WL$AgeYears, main='',xlab='Age(years)', col=color)
 
 #report how many participants completed each order of the survey
 pander(table(WL$Order),caption = 'Distribution by Order of Presentation')
@@ -189,7 +197,7 @@ pander(table(WL$Order),caption = 'Distribution by Order of Presentation')
 ```{r accuracy_trials}
 #report summary statistics for performance during familiarization/accuracy trials
 pander(summary(WL$Fam.Match))
-hist(WL$Fam.Match,main='',xlab='Num correct')
+hist(WL$Fam.Match,main='',xlab='Num correct', col=color)
 pander(table(WL$Fam.Match),caption='Participant Count by Number of Trials Correct')
 ```
 
@@ -203,15 +211,18 @@ Now there are `r dim(WL)[1]` participants after removing for familiarization err
 ```{r performance}
 #Report summary statistics for accuracy on judgment questions
 pander(summary(WL$EJ.Match), caption='Proportion of Explicit Judgment Questions Correct')
-hist(WL$EJ.Match,main='',xlab='Proportion of explicit judgment correct')
+hist(WL$EJ.Match,main='',xlab='Proportion of explicit judgment correct', col=color)
 
 #Report summary statistics for accuracy on ask questions
 pander(summary(WL$Ask.Match),caption='Proportion of Ask Questions correct')
-hist(WL$Ask.Match,main='',xlab='Proportion of Ask Questions correct')
+hist(WL$Ask.Match,main='',xlab='Proportion of Ask Questions correct',col=color)
 
 #Report summary statistics for accuracy on endorse questions
 pander(summary(WL$Word.Match), caption = 'Proportion of Endorsement Questions correct')
-hist(WL$Word.Match, main='',xlab='Proportion of Endorsement Questions correct')
+hist(WL$Word.Match, main='',xlab='Proportion of Endorsement Questions correct',col=color)
+
+pander(summary(WL$Total), caption = 'Performance across all questions')
+hist(WL$Total, main='',xlab='Performance',col=color)
 
 #Compare performance to chance guessing
 EJ.ttest = t.test(WL$EJ.Match,mu=.5) # Ho: mu=0.5
@@ -269,8 +280,10 @@ WL$HUNGRY.score = ifelse(WL$HUNGRY=="No",0,ifelse(WL$HUNGRY=="A little bit",1,if
 #Calculate aggregates of children's perceptions of the robots' agency and experience
 WL$AgIndex = (WL$THINK.score + WL$MORAL.score + WL$CHOOSE.score)/3
 WL$ExpIndex = (WL$PAIN.score + WL$SCARED.score + WL$HUNGRY.score)/3
-WL$AgIndex.cent = scale(WL$AgIndex,center=T,scale=F)
-WL$ExpIndex.cent = scale(WL$ExpIndex,center=T,scale=F)
+
+WL$AgIndex.cent = scale(WL$AgIndex,center=T,scale=T)
+WL$ExpIndex.cent = scale(WL$ExpIndex,center=T,scale=T)
+WL$Age.cent = scale(WL$Age,center=T,scale=T)
 ```
 
 ```{r correlations}
@@ -278,44 +291,85 @@ WL$ExpIndex.cent = scale(WL$ExpIndex,center=T,scale=F)
 plot(jitter(WL$ExpIndex),jitter(WL$AgIndex))
 cor.test(WL$AgIndex,WL$ExpIndex)
 
-plot(jitter(WL$Word.Match),jitter(WL$AgIndex))
-cor.test(WL$Word.Match,WL$AgIndex)
+plot(WL$Age,jitter(WL$ExpIndex))
+cor.test(WL$Age,WL$ExpIndex)
 
-plot(jitter(WL$Ask.Match),jitter(WL$AgIndex))
+plot(WL$Age,jitter(WL$AgIndex))
+cor.test(WL$Age,WL$AgIndex)
+
+plot(jitter(WL$AgIndex),jitter(WL$Ask.Match))
 cor.test(WL$Ask.Match,WL$AgIndex)
 
-plot(jitter(WL$EJ.Match),jitter(WL$AgIndex))
-cor.test(WL$EJ.Match,WL$AgIndex)
+plot(jitter(WL$AgIndex),jitter(WL$Word.Match))
+cor.test(WL$Word.Match,WL$AgIndex)
 
-plot(jitter(WL$Word.Match),jitter(WL$ExpIndex))
-cor.test(WL$Word.Match,WL$ExpIndex)
-
-plot(jitter(WL$Ask.Match),jitter(WL$ExpIndex))
+plot(jitter(WL$ExpIndex),jitter(WL$Ask.Match))
 cor.test(WL$Ask.Match,WL$ExpIndex)
 
-plot(jitter(WL$EJ.Match),jitter(WL$ExpIndex))
-cor.test(WL$EJ.Match,WL$ExpIndex)
-```
-
-```{r classification_plots}
-plot(WL$Ask.bin,WL$AgIndex)
-plot(WL$Word.bin,WL$AgIndex)
-plot(WL$Ask.bin,WL$ExpIndex)
-plot(WL$Word.bin,WL$ExpIndex)
-plot(jitter(WL$ExpIndex),jitter(WL$AgIndex),col=(ifelse(WL$Ask.bin==1,'red','blue')), main = "Binary Ask Match")
-plot(jitter(WL$ExpIndex),jitter(WL$AgIndex),col=(ifelse(WL$Word.bin==1,'red','blue')), main = "Binary Word Match")
+plot(jitter(WL$ExpIndex),jitter(WL$Word.Match))
+cor.test(WL$Word.Match,WL$ExpIndex)
 ```
 
 ##Regression Analyses
 ```{r regressions}
 #assess which predictors predict responses to test questions
-summary(glm(EJ.Match~ExpIndex.cent+AgIndex.cent+Age,data=WL))
-summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent+Age,data=WL))
-summary(glm(Word.Match~ExpIndex.cent+AgIndex.cent+Age,data=WL))
+#summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent,data=WL))
+#summary(glm(Word.Match~ExpIndex.cent*AgIndex.cent,data=WL))
+summary(glm(Total~ExpIndex.cent+AgIndex.cent,data=WL))
 
-summary(glm(Ask.bin~ExpIndex.cent+AgIndex.cent+Age+Sex+Order+AccurateRobot,data=WL,family="binomial"))
-summary(glm(Word.bin~ExpIndex.cent+AgIndex.cent+Age+Sex+Order+AccurateRobot,data=WL,family="binomial"))
+#summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL))
+#summary(glm(Word.Match~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL))
+summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL))
 
-summary(glm(Ask.bin~ExpIndex.cent+AgIndex.cent+Age,data=WL,family="binomial"))
-summary(glm(Word.bin~ExpIndex.cent+AgIndex.cent+Age,data=WL,family="binomial"))
+summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex,data=WL))
+
+summary(glm(Total~AgIndex.cent+Age.cent+Sex,data=WL))
+
+plot(WL$Total~WL$AgIndex.cent,col=color,xlab='Agency',ylab='Performance',main="",lwd=4)
+abline(lm(Total~AgIndex.cent+Age.cent+Sex,data=WL),col=color,lwd=4)
+#summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent+Age.cent+ExpIndex.cent*Age.cent+AgIndex.cent*Age.cent,data=WL))
+#summary(glm(Word.Match~ExpIndex.cent+AgIndex.cent+Age.cent+ExpIndex.cent*Age.cent+AgIndex.cent*Age.cent,data=WL))
+#summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+ExpIndex.cent*Age.cent+AgIndex.cent*Age.cent,data=WL))
+
+#ummary(glm(Ask.bin~ExpIndex.cent+AgIndex.cent+Age,data=WL,family="binomial"))
+#summary(glm(Word.bin~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL,family="binomial"))
+summary(glm(Total.bin~ExpIndex.cent+AgIndex.cent+Age.cent+Sex,data=WL,family="binomial"))
+
+#summary(glm(Ask.bin~ExpIndex.cent+AgIndex.cent+Age+ExpIndex.cent*Age+AgIndex.cent*Age,data=WL,family="binomial"))
+#summary(glm(Word.bin~ExpIndex.cent+AgIndex.cent+Age.cent+ExpIndex.cent*Age.cent+AgIndex.cent*Age.cent,data=WL,family="binomial"))
+
+```
+
+```{r LDA_askbin, include=FALSE}
+WL.red = WL[which(!is.na(WL$AgIndex.cent)&!is.na(WL$ExpIndex.cent)&!is.na(WL$Ask.bin)),]
+set.seed(1)
+train = sample(dim(WL.red)[1],dim(WL.red)[1]*.6)
+sample.train <- WL.red[train,] 
+sample.test <-WL.red[-train,] 
+
+lda.fit.Ask = lda(Ask.bin~AgIndex.cent+Age.cent,data=sample.train)
+lda.pred=predict(lda.fit.Ask,newdata=sample.test)
+lda.class=lda.pred$class
+mean(lda.class!=sample.test$Ask.bin)
+```
+
+```{r LDA_wordbin, include=FALSE}
+WL.red = WL[which(!is.na(WL$AgIndex.cent)&!is.na(WL$ExpIndex.cent)&!is.na(WL$Word.bin)),]
+set.seed(2000)
+train = sample(dim(WL.red)[1],dim(WL.red)[1]*.6)
+sample.train.Word <- WL.red[train,] 
+sample.test.Word <-WL.red[-train,] 
+
+lda.fit.Word = lda(Word.bin~Age+AgIndex,data=sample.train.Word)
+lda.pred=predict(lda.fit.Word,newdata=sample.test.Word)
+lda.class=lda.pred$class
+#mean(lda.class!=sample.test.Word$Word.bin) #error rate
+
+plot(lda.fit.Word,dimen=2)
+
+#With age and agency index as predictors, the error rate for predicting whether the child was better or worse at matching the word of the accurate robot is `r round(mean(lda.class!=sample.test.Word$Word.bin),2)`.
+```
+
+```{r classification_plots, include=FALSE}
+plot(WL$Age,jitter(WL$AgIndex),col=(ifelse(WL$Word.bin==1,'red','blue')), main = "Binary Word Match")
 ```
