@@ -32,10 +32,10 @@ color = rgb(249/255,175/255,61/255)
 
  version = '2.5' #qualtrics version
  request = 'getLegacyResponseData' #Returns all of the response data for a survey in the original (legacy) data format.
- username = 'kabrink%23umich' #hidden
- token = 'TmT146rdJKwI1BJOzPnmRN41S1ImfUt7vaDx5Zaq' #hidden
+ username =  #hidden
+ token = #hidden
  format = 'CSV' #comma-separated value format
- surveyID = 'SV_5p7N0qM3pPb1LUh' #hidden
+ surveyID = #hidden
  exportTags = '1' #f 1 (true) the export tags will be used rather than the V labels. The default is 0.
  labels = '1' #If 1 (true) the label for choices and answers will be used and not the id. The default is 0.
  UnansweredRecode = '-99' #missing value coding
