@@ -32,10 +32,10 @@ color = rgb(249/255,175/255,61/255)
 
  version = '2.5' #qualtrics version
  request = 'getLegacyResponseData' #Returns all of the response data for a survey in the original (legacy) data format.
- username =  #hidden
- token = #hidden
+ username = '' #hidden
+ token = '' #hidden
  format = 'CSV' #comma-separated value format
- surveyID = #hidden
+ surveyID = '' #hidden
  exportTags = '1' #f 1 (true) the export tags will be used rather than the V labels. The default is 0.
  labels = '1' #If 1 (true) the label for choices and answers will be used and not the id. The default is 0.
  UnansweredRecode = '-99' #missing value coding
@@ -142,13 +142,28 @@ WL$Fam.Match = ifelse(WL$Fam1=="Brush",1,0) + ifelse(WL$Fam2=="Doll",1,0) + ifel
 #Calculate the proportion of answers where children accurately determined which robot was bad at naming the familiar objects 
 WL$EJ.Match = (ifelse(WL$EJ1!=WL$AccurateRobot,1,0) + ifelse(WL$EJ2!=WL$AccurateRobot,1,0))/2
 
+WL$EJ.Purple = (ifelse(WL$EJ1!="Purple",1,0) + ifelse(WL$EJ2!="Purple",1,0))/2
+WL$EJ.Orange = (ifelse(WL$EJ1!="Orange",1,0) + ifelse(WL$EJ2!="Orange",1,0))/2
+
 #Calculate the proportion of answers where children said they would ask the accurate robot for the name of the novel object
-WL$Ask.Match = (ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0))/4
+WL$Ask.Match = (ifelse(WL$Ask1B==WL$AccurateRobot,1,0) + ifelse(WL$Ask2B==WL$AccurateRobot,1,0) 
+                + ifelse(WL$Ask3B==WL$AccurateRobot,1,0) + ifelse(WL$Ask4B==WL$AccurateRobot,1,0))/4
+
+WL$Ask.Purple = (ifelse(WL$Ask1B=="Purple",1,0) + ifelse(WL$Ask2B=="Purple",1,0) 
+                 + ifelse(WL$Ask3B=="Purple",1,0) + ifelse(WL$Ask4B=="Purple",1,0))/4
+WL$Ask.Orange = (ifelse(WL$Ask1B=="Orange",1,0) + ifelse(WL$Ask2B=="Orange",1,0) 
+                 + ifelse(WL$Ask3B=="Orange",1,0) + ifelse(WL$Ask4B=="Orange",1,0))/4
 
 WL$Ask.bin = factor(ifelse(WL$Ask.Match <= mean(WL$Ask.Match,na.rm=T), 0, 1))
 
 #Calculate the proportion of answers where children chose the same name that the accurate robot chose
-WL$Word.Match = (ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0))/4
+WL$Word.Match = (ifelse(WL$Ask1C==WL$AccurateRobot,1,0) + ifelse(WL$Ask2C==WL$AccurateRobot,1,0) 
+                 + ifelse(WL$Ask3C==WL$AccurateRobot,1,0) + ifelse(WL$Ask4C==WL$AccurateRobot,1,0))/4
+
+WL$Word.Purple = (ifelse(WL$Ask1C=="Purple",1,0) + ifelse(WL$Ask2C=="Purple",1,0) 
+                 + ifelse(WL$Ask3C=="Purple",1,0) + ifelse(WL$Ask4C=="Purple",1,0))/4
+WL$Word.Orange = (ifelse(WL$Ask1C=="Orange",1,0) + ifelse(WL$Ask2C=="Orange",1,0) 
+                 + ifelse(WL$Ask3C=="Orange",1,0) + ifelse(WL$Ask4C=="Orange",1,0))/4
 
 WL$Word.bin = factor(ifelse(WL$Word.Match <= mean(WL$Word.Match,na.rm=T), 0, 1))
 
@@ -204,7 +219,10 @@ pander(table(WL$Fam.Match),caption='Participant Count by Number of Trials Correc
 ```{r familiarization_error}
 #Remove all participants that failed to correctly answer all four familiarization trials
 WL = WL[which(WL$Fam.Match==4),]
+
+pander(table(WL$Order),caption = 'Distribution by Order of Presentation after removing for familiarization')
 ```
+
 Now there are `r dim(WL)[1]` participants after removing for familiarization errors. 
 
 #Comparisons with chance for three test questions.
@@ -253,6 +271,13 @@ chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'),
                           )
 
 pander(chance.table,style = 'rmarkdown')
+
+t.test(WL$EJ.Purple,mu=.5) # Ho: mu=0.5
+t.test(WL$Ask.Purple,mu=.5)
+t.test(WL$Word.Purple,mu=.5)
+t.test(WL$EJ.Orange,mu=.5) # Ho: mu=0.5
+t.test(WL$Ask.Orange,mu=.5)
+t.test(WL$Word.Orange,mu=.5)
 
 #For future rmarkdown pdf use
 # \begin{center}
@@ -317,26 +342,16 @@ cor.test(WL$Word.Match,WL$ExpIndex)
 #summary(glm(Word.Match~ExpIndex.cent*AgIndex.cent,data=WL))
 summary(glm(Total~ExpIndex.cent+AgIndex.cent,data=WL))
 
-#summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL))
-#summary(glm(Word.Match~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL))
 summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL))
 
 summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex,data=WL))
 
 summary(glm(Total~AgIndex.cent+Age.cent+Sex,data=WL))
 
-plot(WL$Total~WL$AgIndex.cent,col=color,xlab='Agency',ylab='Performance',main="",lwd=4)
-abline(lm(Total~AgIndex.cent+Age.cent+Sex,data=WL),col=color,lwd=4)
-#summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent+Age.cent+ExpIndex.cent*Age.cent+AgIndex.cent*Age.cent,data=WL))
-#summary(glm(Word.Match~ExpIndex.cent+AgIndex.cent+Age.cent+ExpIndex.cent*Age.cent+AgIndex.cent*Age.cent,data=WL))
-#summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+ExpIndex.cent*Age.cent+AgIndex.cent*Age.cent,data=WL))
+#plot(WL$Total~WL$AgIndex.cent,col=color,xlab='Agency',ylab='Performance',main="",lwd=4)
+#abline(lm(Total~AgIndex.cent+Age.cent+Sex,data=WL),col=color,lwd=4)
 
-#ummary(glm(Ask.bin~ExpIndex.cent+AgIndex.cent+Age,data=WL,family="binomial"))
-#summary(glm(Word.bin~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL,family="binomial"))
 summary(glm(Total.bin~ExpIndex.cent+AgIndex.cent+Age.cent+Sex,data=WL,family="binomial"))
-
-#summary(glm(Ask.bin~ExpIndex.cent+AgIndex.cent+Age+ExpIndex.cent*Age+AgIndex.cent*Age,data=WL,family="binomial"))
-#summary(glm(Word.bin~ExpIndex.cent+AgIndex.cent+Age.cent+ExpIndex.cent*Age.cent+AgIndex.cent*Age.cent,data=WL,family="binomial"))
 
 ```
 
@@ -373,3 +388,42 @@ plot(lda.fit.Word,dimen=2)
 ```{r classification_plots, include=FALSE}
 plot(WL$Age,jitter(WL$AgIndex),col=(ifelse(WL$Word.bin==1,'red','blue')), main = "Binary Word Match")
 ```
+
+```{r MacKinnon_mediation}
+#MacKinnon et al., 2007
+
+#Estimate Equations 2 (Y = i + c'X + bM + e) and 3 (M = i + aX + e), i = intercept, e = error, M = mediator, X = predictor, y = criterion. Compute product of a & b.
+
+#Equation 2
+eq2 = lm(Total~Age.cent+AgIndex.cent,
+         data=WL)
+pander(summary(eq2))
+pander(summary(eq2), caption='Is the slope of Agency significantly different from zero?')
+b = eq2$coefficients[["AgIndex.cent"]]
+var.b = (summary(eq2)$coef[,'Std. Error'][['AgIndex.cent']])^2
+n.b = length(resid(eq2))
+
+#Equation 3
+eq3 = lm(AgIndex.cent~Age.cent,
+         data=WL)
+pander(summary(eq3), caption='Is the slope of Age significantly different from zero?')
+a = eq3$coefficients[["Age.cent"]]
+var.a = (summary(eq3)$coef[,'Std. Error'][['Age.cent']])^2
+n.a = length(resid(eq3))
+
+#To test for significance, the product is then divided by the standard error of the product and the ratio is compared to a standard normal distribution.
+
+#variance of the roduct of two independent random variables (Goodman, 1960)
+var.ab = a^2*(var.b/n.b) + b^2*(var.a/n.a) - ((var.a/n.a)*(var.b/n.b)) 
+
+#The standard error of an estimate may also be defined as the square root of the estimated error 
+se.ab = sqrt(abs(var.ab))
+
+sig = (a*b)/se.ab
+abs(sig)>1.96
+
+#The rationale behind this method is that mediation depends on the extent to which the program changes the mediator, a, and the extent to which the mediator affects the outcome variable, b.
+```
+
+The product of the coefficients ab = `r round(a*b,4)`, t = `r round(sig,2)` (MacKinnon, Fairchild, & Fritz, 2007)
+
