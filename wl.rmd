@@ -225,6 +225,12 @@ pander(table(WL$Order),caption = 'Distribution by Order of Presentation after re
 
 Now there are `r dim(WL)[1]` participants after removing for familiarization errors. 
 
+```{r exploration}
+t.test(WL$Total~WL$Sex) #no significant effect of age (this one's close)
+
+pander(summary(aov(Total~Order, data=WL))) #no significant effect of order (thank god)
+```
+
 #Comparisons with chance for three test questions.
 ```{r performance}
 #Report summary statistics for accuracy on judgment questions
