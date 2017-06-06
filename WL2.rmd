@@ -1,0 +1,515 @@
+---
+title: "Word Learning"
+author: "Kimberly A. Brink"
+date: '`r format(Sys.Date(),"%B %d, %Y")`'
+output: html_document
+---
+
+"Word Learning" is a study that assesses whether children will selectively trust a robot that provides accurate information compared to a robot that provides inaccurate information. Children watch two robots name a series of familiar objects, where one robot always names the object correctly and the other robot always incorrectly names the robot. The two robots are distingushed by their colors. 
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path='Figures/', dev=c('png','postscript'), fig.width = 8, fig.height = 8, echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r standard_error}
+std.error <- function(x) sd(x,na.rm=TRUE)/sqrt(length(x))
+```
+
+```{r libraries}
+library(lubridate)
+library(pander)
+library(MASS)
+library(QuantPsyc)
+library(ggplot2)
+library(reshape2)
+options("scipen"=100, "digits"= 4)
+```
+
+```{r settings}
+color = rgb(249/255,175/255,61/255)
+```
+
+```{r import}
+source("~/Dropbox/Research/Michigan/Dissertation - Robots/Word Learning/Private/WL2_data.R")
+```
+
+```{r formatting}
+#Clean the data set
+
+#Subset the data set by condition (i.e., by the order in which the robots are presented and by which robot is accurate)
+WL2.A <- subset(qualtrics.WL2, Condition==1 & AccurateRobot=='Purple')
+WL2.B <- subset(qualtrics.WL2, Condition==2 & AccurateRobot=='Purple')
+WL2.C <- subset(qualtrics.WL2, Condition==1 & AccurateRobot=='Orange')
+WL2.D <- subset(qualtrics.WL2, Condition==2 & AccurateRobot=='Orange')
+
+#Each condition of the survey has different question names for the same questions. 
+#Remove all unused variable names from each condition
+
+WL2.A <- WL2.A[, c("ResponseID","StartDate","Finished","Assent","Condition","AccurateRobot","Subject","Sex","DOB","EXP","Fam1.A","Fam1.A_TEXT","Fam2.A","Fam2.A_TEXT","Fam3.A","Fam3.A_TEXT","Fam4.A","Fam4.A_TEXT","EJ1.A","Ask1A.AC","Ask1A.AC_TEXT","Ask1B.AC","Ask1C.AC","Ask2A.AC","Ask2A.AC_TEXT","Ask2B.AC","Ask2C.AC","Ask3A.AC","Ask3A.AC_TEXT","Ask3B.AC","Ask3C.AC","Ask4A.AC","Ask4A.AC_TEXT","Ask4B","Ask4C","EJ2.AC","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_File","Comments")] 
+
+WL2.B <- WL2.B[, c("ResponseID","StartDate","Finished","Assent","Condition","AccurateRobot","Subject","Sex","DOB","EXP","Fam1.B","Fam1.B_TEXT","Fam2.B","Fam2.B_TEXT","Fam3.B","Fam3.B_TEXT","Fam4.B","Fam4.B_TEXT","EJ1.B","Ask1A.BD","Ask1A.BD_TEXT","Ask1B.BD","Ask1C.BD","Ask2A.BD","Ask2A.BD_TEXT","Ask2B.Bd","Ask2C.BD","Ask3A.BD","Ask3A.BD_TEXT","Ask3B.BD","Ask3C.BD","Ask4A.BD","Ask4A.BD_TEXT","Ask4B.BD","Ask4C.BD","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_File","Comments")]
+
+WL2.C <- WL2.C[, c("ResponseID","StartDate","Finished","Assent","Condition","AccurateRobot","Subject","Sex","DOB","EXP","Fam1.C","Fam1.C_TEXT","Fam2.C","Fam2.C_TEXT","Fam3.C","Fam3.C_TEXT","Fam4.C","Fam4.C_TEXT","EJ1.C","Ask1A.AC","Ask1A.AC_TEXT","Ask1B.AC","Ask1C.AC","Ask2A.AC","Ask2A.AC_TEXT","Ask2B.AC","Ask2C.AC","Ask3A.AC","Ask3A.AC_TEXT","Ask3B.AC","Ask3C.AC","Ask4A.AC","Ask4A.AC_TEXT","Ask4B","Ask4C","EJ2.AC","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_File","Comments")] 
+
+WL2.D <- WL2.D[, c("ResponseID","StartDate","Finished","Assent","Condition","AccurateRobot","Subject","Sex","DOB","EXP","Fam1.D","Fam1.D_TEXT","Fam2.D","Fam2.D_TEXT","Fam3.D","Fam3.D_TEXT","Fam4.D","Fam4.D_TEXT","EJ1.D","Ask1A.BD","Ask1A.BD_TEXT","Ask1B.BD","Ask1C.BD","Ask2A.BD","Ask2A.BD_TEXT","Ask2B.Bd","Ask2C.BD","Ask3A.BD","Ask3A.BD_TEXT","Ask3B.BD","Ask3C.BD","Ask4A.BD","Ask4A.BD_TEXT","Ask4B.BD","Ask4C.BD","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_File","Comments")]
+
+#Rename all variables so that they have the same names across conditions
+names(WL2.A) <- c("ResponseID","StartDate","Finished","Assent","Condition","AccurateRobot","Subject","Sex","DOB","EXP","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")
+
+names(WL2.B) <- c("ResponseID","StartDate","Finished","Assent","Condition","AccurateRobot","Subject","Sex","DOB","EXP","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")
+
+names(WL2.C) <- c("ResponseID","StartDate","Finished","Assent","Condition","AccurateRobot","Subject","Sex","DOB","EXP","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")
+
+names(WL2.D) <- c("ResponseID","StartDate","Finished","Assent","Condition","AccurateRobot","Subject","Sex","DOB","EXP","Fam1","Fam1_TEXT","Fam2","Fam2_TEXT","Fam3","Fam3_TEXT","Fam4","Fam4_TEXT","EJ1","Ask1A","Ask1A_TEXT","Ask1B","Ask1C","Ask2A","Ask2A_TEXT","Ask2B","Ask2C","Ask3A","Ask3A_TEXT","Ask3B","Ask3C","Ask4A","Ask4A_TEXT","Ask4B","Ask4C","EJ2","WHYCHOOSE","WHY","CANDY","CHOOSE","THINK","MORAL","PAIN","FEELINGS","SCARED","HUNGRY","P.SEX","O.SEX","OLDER","Audio_file","Comments")
+
+#Add a new variable to each data set which contains the condition name for each participant
+WL2.A$Order = "A"
+WL2.B$Order = "B"
+WL2.C$Order = "C"
+WL2.D$Order = "D"
+
+#Combine all data into one dataset
+WL2 <- rbind(WL2.A,WL2.B,WL2.C,WL2.D)
+```
+
+```{r preprocessing}
+#Set all missing values to NA
+WL2[ WL2 == "" ] = NA
+WL2[ WL2 == -99 ] = NA
+
+
+#WL2[WL2$Subject == "010AnA",]$DOB = '06/13/2012' #error in experimenter data entry
+
+#Convert categorical variables to factors
+WL2$AccurateRobot = factor(WL2$AccurateRobot)
+WL2$EJ1 = factor(WL2$EJ1)
+WL2$EJ2 = factor(WL2$EJ2)
+
+WL2$Ask1B = factor(WL2$Ask1B)
+WL2$Ask2B = factor(WL2$Ask2B)
+WL2$Ask3B = factor(WL2$Ask3B)
+WL2$Ask4B = factor(WL2$Ask4B)
+
+WL2$Ask1C = factor(WL2$Ask1C)
+WL2$Ask2C = factor(WL2$Ask1C)
+WL2$Ask3C = factor(WL2$Ask3C)
+WL2$Ask4C = factor(WL2$Ask4C)
+```
+
+```{r variables}
+#Convert date variables to a format that can be processed by R
+WL2$DOB = mdy(WL2$DOB)
+WL2$DOT = as.Date(WL2$StartDate)
+
+#Calculate the age of each participant in months
+WL2$Age = year(as.period(interval(WL2$DOB, WL2$DOT)))*12 + month(as.period(interval(WL2$DOB, WL2$DOT))) + day(as.period(interval(WL2$DOB, WL2$DOT)))/30
+
+WL2$AgeYears = WL2$Age/12
+
+#Calculate whether children accurately answered all familiarization trials.
+WL2$Fam.Match = ifelse(WL2$Fam1=="Brush",1,0) + ifelse(WL2$Fam2=="Doll",1,0) + ifelse(WL2$Fam3=="Ball",1,0) + ifelse(WL2$Fam4=="Bear",1,0)
+
+#Calculate the proportion of answers where children accurately determined which robot was bad at naming the familiar objects 
+WL2$EJ1.Match = ifelse(WL2$EJ1!=WL2$AccurateRobot,1,0)
+WL2$EJ2.Match = ifelse(WL2$EJ2!=WL2$AccurateRobot,1,0)
+WL2$EJ.Match = rowMeans(WL2[c('EJ1.Match','EJ2.Match')],na.rm=T)
+WL2$EJ.Match[is.nan(WL2$EJ.Match)]=NA
+
+WL2$EJ1.Purple = ifelse(WL2$EJ1!="Purple",1,0)
+WL2$EJ2.Purple = ifelse(WL2$EJ2!="Purple",1,0)
+WL2$EJ.Purple = rowMeans(WL2[c('EJ1.Purple','EJ2.Purple')],na.rm=T)
+WL2$EJ.Purple[is.nan(WL2$EJ.Purple)]=NA
+
+WL2$EJ1.Orange = ifelse(WL2$EJ1!="Orange",1,0)
+WL2$EJ2.Orange = ifelse(WL2$EJ2!="Orange",1,0)
+WL2$EJ.Orange = rowMeans(WL2[c('EJ1.Orange','EJ2.Orange')],na.rm=T)
+WL2$EJ.Orange[is.nan(WL2$EJ.Orange)]=NA
+
+#Calculate the proportion of answers where children said they would ask the accurate robot for the name of the novel object
+WL2$Ask1B.Match = ifelse(WL2$Ask1B==WL2$AccurateRobot,1,0)
+WL2$Ask2B.Match = ifelse(WL2$Ask2B==WL2$AccurateRobot,1,0)
+WL2$Ask3B.Match = ifelse(WL2$Ask3B==WL2$AccurateRobot,1,0)
+WL2$Ask4B.Match = ifelse(WL2$Ask4B==WL2$AccurateRobot,1,0)
+WL2$Ask.Match = rowMeans(WL2[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match')],na.rm=T)
+WL2$Ask.Match[is.nan(WL2$Ask.Match)]=NA
+
+WL2$Ask1B.Purple = ifelse(WL2$Ask1B=='Purple',1,0)
+WL2$Ask2B.Purple = ifelse(WL2$Ask2B=='Purple',1,0)
+WL2$Ask3B.Purple = ifelse(WL2$Ask3B=='Purple',1,0)
+WL2$Ask4B.Purple = ifelse(WL2$Ask4B=='Purple',1,0)
+WL2$Ask.Purple = rowMeans(WL2[c('Ask1B.Purple','Ask2B.Purple','Ask3B.Purple','Ask4B.Purple')],na.rm=T)
+WL2$Ask.Purple[is.nan(WL2$Ask.Purple)]=NA
+
+WL2$Ask1B.Orange = ifelse(WL2$Ask1B=='Orange',1,0)
+WL2$Ask2B.Orange = ifelse(WL2$Ask2B=='Orange',1,0)
+WL2$Ask3B.Orange = ifelse(WL2$Ask3B=='Orange',1,0)
+WL2$Ask4B.Orange = ifelse(WL2$Ask4B=='Orange',1,0)
+WL2$Ask.Orange = rowMeans(WL2[c('Ask1B.Orange','Ask2B.Orange','Ask3B.Orange','Ask4B.Orange')],na.rm=T)
+WL2$Ask.Orange[is.nan(WL2$Ask.Orange)]=NA
+
+WL2$Ask.bin = factor(ifelse(WL2$Ask.Match <= mean(WL2$Ask.Match,na.rm=T), 0, 1))
+
+#Calculate the proportion of answers where children chose the same name that the accurate robot chose
+WL2$Ask1C.Match = ifelse(WL2$Ask1C==WL2$AccurateRobot,1,0)
+WL2$Ask2C.Match = ifelse(WL2$Ask2C==WL2$AccurateRobot,1,0)
+WL2$Ask3C.Match = ifelse(WL2$Ask3C==WL2$AccurateRobot,1,0)
+WL2$Ask4C.Match = ifelse(WL2$Ask4C==WL2$AccurateRobot,1,0)
+WL2$Word.Match = rowMeans(WL2[c('Ask1C.Match','Ask2C.Match','Ask3C.Match','Ask4C.Match')],na.rm=T)
+WL2$Word.Match[is.nan(WL2$Ask.Match)]=NA
+
+WL2$Ask1C.Purple = ifelse(WL2$Ask1C=='Purple',1,0)
+WL2$Ask2C.Purple = ifelse(WL2$Ask2C=='Purple',1,0)
+WL2$Ask3C.Purple = ifelse(WL2$Ask3C=='Purple',1,0)
+WL2$Ask4C.Purple = ifelse(WL2$Ask4C=='Purple',1,0)
+WL2$Word.Purple = rowMeans(WL2[c('Ask1C.Purple','Ask2C.Purple','Ask3C.Purple','Ask4C.Purple')],na.rm=T)
+WL2$Word.Purple[is.nan(WL2$Ask.Purple)]=NA
+
+WL2$Ask1C.Orange = ifelse(WL2$Ask1C=='Orange',1,0)
+WL2$Ask2C.Orange = ifelse(WL2$Ask2C=='Orange',1,0)
+WL2$Ask3C.Orange = ifelse(WL2$Ask3C=='Orange',1,0)
+WL2$Ask4C.Orange = ifelse(WL2$Ask4C=='Orange',1,0)
+WL2$Word.Orange = rowMeans(WL2[c('Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL2$Word.Orange[is.nan(WL2$Ask.Orange)]=NA
+
+WL2$Word.bin = factor(ifelse(WL2$Word.Match <= mean(WL2$Word.Match,na.rm=T), 0, 1))
+
+WL2$Total = rowMeans(WL2[c('EJ1.Match','EJ2.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+
+WL2$Total.bin = factor(ifelse(WL2$Total <= mean(WL2$Total,na.rm=T), 0, 1))
+```
+
+There were `r sum(grepl("No Show",WL2$Comments))+sum(grepl("No show",WL2$Comments))` no shows.
+There were `r sum(grepl("Cancelled",WL2$Comments))+sum(grepl("cancelled",WL2$Comments))+sum(grepl("Canceled",WL2$Comments))+sum(grepl("canceled",WL2$Comments))` cancelled appointments
+There were `r sum(grepl("Fuss out",WL2$Comments))+sum(grepl("fuss out",WL2$Comments))` fuss outs.
+There were `r sum(is.na(WL2$Assent))` children that did not assent.
+
+
+```{r predictors}
+#Recode perceptions of agency and experience questions
+WL2$THINK.score = ifelse(WL2$THINK=="No",0,ifelse(WL2$THINK=="A little bit",1,ifelse(WL2$THINK=="A medium amount",2,ifelse(WL2$THINK=="A lot",3,NA))))
+WL2$MORAL.score = ifelse(WL2$MORAL=="No",0,ifelse(WL2$MORAL=="A little bit",1,ifelse(WL2$MORAL=="A medium amount",2,ifelse(WL2$MORAL=="A lot",3,NA))))
+WL2$CHOOSE.score = ifelse(WL2$CHOOSE=="No",0,ifelse(WL2$CHOOSE=="A few things",1,ifelse(WL2$CHOOSE=="A medium amount of things",2,ifelse(WL2$CHOOSE=="A lot of things",3,NA))))
+WL2$PAIN.score = ifelse(WL2$PAIN=="No",0,ifelse(WL2$PAIN=="A little bit",1,ifelse(WL2$PAIN=="A medium amount",2,ifelse(WL2$PAIN=="A lot",3,NA))))
+WL2$SCARED.score = ifelse(WL2$SCARED=="No",0,ifelse(WL2$SCARED=="A little bit",1,ifelse(WL2$SCARED=="A medium amount",2,ifelse(WL2$SCARED=="A lot",3,NA))))
+WL2$HUNGRY.score = ifelse(WL2$HUNGRY=="No",0,ifelse(WL2$HUNGRY=="A little bit",1,ifelse(WL2$HUNGRY=="A medium amount",2,ifelse(WL2$HUNGRY=="A lot",3,NA))))
+
+#Calculate aggregates of children's perceptions of the robots' agency and experience
+WL2$AgIndex = (WL2$THINK.score + WL2$MORAL.score + WL2$CHOOSE.score)/3
+WL2$ExpIndex = (WL2$PAIN.score + WL2$SCARED.score + WL2$HUNGRY.score)/3
+WL2$MindIndex = (WL2$PAIN.score + WL2$SCARED.score + WL2$HUNGRY.score+WL2$THINK.score + WL2$MORAL.score + WL2$CHOOSE.score)/6
+WL2$AgIndex.cent = scale(WL2$AgIndex,center=T,scale=T)
+WL2$ExpIndex.cent = scale(WL2$ExpIndex,center=T,scale=T)
+WL2$Age.cent = scale(WL2$Age,center=T,scale=T)
+WL2$MindIndex.cent = scale(WL2$MindIndex,center=T,scale=T)
+```
+
+```{r excluding}
+WL2 = WL2[!is.na(WL2$Fam.Match),]
+WL2 = WL2[WL2$Subject!="Test",]
+WL2 = WL2[WL2$Subject!="Test2",]
+WL2 = WL2[!is.na(WL2$Subject),]
+```
+
+##Demographics
+There are `r dim(WL2)[1]` participants.
+
+The average age of the sample is `r round(mean(WL2$Age), digits = 2)` months.
+
+The median age of the sample is `r round(median(WL2$Age), digits = 2)` months.
+
+The minimum age of the sample is `r round(min(WL2$Age), digits = 2)` months.
+
+The maximum age of the sample is `r round(max(WL2$Age), digits = 2)` months.
+
+There are `r sum(WL2$Sex == "Female")` females in the sample.
+
+The first date of test was `r min(WL2$DOT)`.
+
+The most recent date of test was `r max(WL2$DOT)`.
+
+
+```{r descriptives}
+#calculate summary statistics for age of sample
+panderOptions("digits", 4)
+pander(summary(WL2$Age), caption = 'Age(months)')
+hist(WL2$Age,main='',xlab='Age(months)', col=color)
+
+pander(summary(WL2$AgeYears), caption = 'Age(years)')
+hist(WL2$AgeYears, main='',xlab='Age(years)', col=color)
+
+#report how many participants completed each order of the survey
+pander(table(WL2$Order),caption = 'Distribution by Order of Presentation')
+```
+
+##Performance during accuracy trials 
+```{r accuracy_trials}
+#report summary statistics for performance during familiarization/accuracy trials
+pander(summary(WL2$Fam.Match))
+hist(WL2$Fam.Match,main='',xlab='Num correct', col=color)
+pander(table(WL2$Fam.Match),caption='Participant Count by Number of Trials Correct')
+```
+
+```{r familiarization_error}
+#Remove all participants that failed to correctly answer all four familiarization trials
+WL2 = WL2[which(WL2$Fam.Match==4),]
+
+pander(table(WL2$Order),caption = 'Distribution by Order of Presentation after removing for familiarization')
+```
+
+Now there are `r dim(WL2)[1]` participants after removing for familiarization errors. 
+
+There are `r dim(WL2)[1]` participants.
+
+The average age of the sample is `r round(mean(WL2$Age), digits = 2)` months.
+
+The median age of the sample is `r round(median(WL2$Age), digits = 2)` months.
+
+The minimum age of the sample is `r round(min(WL2$Age), digits = 2)` months.
+
+The maximum age of the sample is `r round(max(WL2$Age), digits = 2)` months.
+
+There are `r sum(WL2$Sex == "Female")` females in the sample.
+
+The first date of test was `r min(WL2$DOT)`.
+
+The most recent date of test was `r max(WL2$DOT)`.
+
+```{r exploration}
+#t.test(WL2$Total~WL2$Sex)
+
+pander(summary(aov(Total~Order, data=WL2)))
+
+pander(summary(glm(Total~Order+Age, data=WL2)))
+
+pander(summary(glm(Total~Order+AgIndex, data=WL2)))
+
+pander(summary(WL2$Total), caption="Total Correct Breakdown")
+pander(sd(WL2$Total), caption="Total Correct Standard Deviation")
+```
+
+#Comparisons with chance for three test questions.
+```{r performance, fig.height=6,fig.width=8}
+#Report summary statistics for accuracy on judgment questions
+pander(summary(WL2$EJ.Match), caption='Proportion of Explicit Judgment Questions Correct')
+hist(WL2$EJ.Match,main='',xlab='Proportion of explicit judgment correct', col=color)
+
+#Report summary statistics for accuracy on ask questions
+pander(summary(WL2$Ask.Match),caption='Proportion of Ask Questions correct')
+hist(WL2$Ask.Match,main='',xlab='Proportion of Ask Questions correct',col=color)
+
+#Report summary statistics for accuracy on endorse questions
+pander(summary(WL2$Word.Match), caption = 'Proportion of Endorsement Questions correct')
+hist(WL2$Word.Match, main='',xlab='Proportion of Endorsement Questions correct',col=color)
+
+pander(summary(WL2$Total), caption = 'Performance across all questions')
+hist(WL2$Total, main='',xlab='Performance',col=color)
+
+#Compare performance to chance guessing
+EJ.ttest = t.test(WL2$EJ.Match,mu=.5) # Ho: mu=0.5
+Ask.ttest = t.test(WL2$Ask.Match,mu=.5)
+Word.ttest = t.test(WL2$Word.Match,mu=.5)
+
+chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'), 
+                          Proportion = c(
+                            paste(round(EJ.ttest$estimate,2),
+                                  '(',round(std.error(WL2$EJ.Match),2),')',sep=''), 
+                            paste(round(Ask.ttest$estimate,2),
+                                  '(',round(std.error(WL2$Ask.Match),2),')',sep=''),
+                            paste(round(Word.ttest$estimate,2),
+                                  '(',round(std.error(WL2$Word.Match),2),')',sep='')), 
+                          't(df)' = c(
+                            paste(round(EJ.ttest$statistic,2),
+                                  '(',round(EJ.ttest$parameter,2),')',sep=''), 
+                            paste(round(Ask.ttest$statistic,2),
+                                  '(',round(Ask.ttest$parameter,2),')',sep=''),
+                            paste(round(Word.ttest$statistic,2),
+                                  '(',round(Word.ttest$parameter,2),')',sep='')),
+                          '95%CI' = c(paste(round(EJ.ttest$conf.int[1],2),
+                                             round(EJ.ttest$conf.int[2],2),sep=","),
+                                       paste(round(Ask.ttest$conf.int[1],2),
+                                             round(Ask.ttest$conf.int[2],2),sep=","),
+                                       paste(round(Word.ttest$conf.int[1],2),
+                                             round(Word.ttest$conf.int[2],2),sep=","))
+                          )
+
+pander(chance.table,style = 'rmarkdown')
+
+WL2.perf = WL2[c("EJ.Match","Ask.Match","Word.Match","Subject")]
+names(WL2.perf) = c("Explicit Judgment","Ask","Endorse","Participant")
+perf = melt(WL2.perf,id='Participant')
+names(perf) = c("Participant","Question Type","Proportion")
+
+performance <- aggregate(perf$Proportion,
+    by = list("Question Type" = perf$`Question Type`),
+    FUN = function(x) c(mean = mean(x,na.rm=T), sd = sd(x,na.rm=T), n = length(x)))
+
+performance <- do.call(data.frame, performance)
+performance$CI <- qt(0.975,df=performance$x.n-1)*performance$x.sd/sqrt(performance$x.n)
+
+performance = performance[c("Question.Type","x.mean","CI")]
+names(performance) = c("Question Type","Proportion","CI")
+
+p = ggplot(data = performance, aes(x = `Question Type`, y = Proportion, fill = `Question Type`))
+p = p + guides(fill=FALSE)
+p = p + geom_bar(width = .5, position=position_dodge(), stat="identity")
+p = p + geom_errorbar(aes(ymin=performance$Proportion-performance$CI, ymax=performance$Proportion+performance$CI),
+                        width=.1,
+                        size = 1.2, # Width of the error bars
+                        position=position_dodge(.65))
+p = p + labs(y="Proportion of Correct Responses")
+p = p + theme(text = element_text(size=28,family="Tw Cen MT"), 
+                axis.text.x = element_text(size=20),
+                axis.title.x = element_text(vjust=0.1),
+                axis.text.y=element_text(angle=90, hjust=.5, size=16),
+                axis.title.y=element_text(margin=margin(0,20,0,0),size=24))
+p+geom_hline(aes(yintercept=.5))
+
+t.test(WL2$EJ.Purple,mu=.5) # Ho: mu=0.5
+t.test(WL2$Ask.Purple,mu=.5)
+t.test(WL2$Word.Purple,mu=.5)
+t.test(WL2$EJ.Orange,mu=.5) # Ho: mu=0.5
+t.test(WL2$Ask.Orange,mu=.5)
+t.test(WL2$Word.Orange,mu=.5)
+
+#For future rmarkdown pdf use
+# \begin{center}
+#   \begin{tabular}{lccc}
+#     \hline
+#     Question & Proportion & t(`r EJ.ttest$parameter`) & 95\% CI\\
+#     \hline
+#     'Explicit judgment' & `r round(EJ.ttest$estimate,2)`(`r round(std.error(WL2$EJ.Match),2)`) & `r round(EJ.ttest$statistic,2)` & `r round(EJ.ttest$conf.int,2)` \\
+#     Ask & `r round(Ask.ttest$estimate,2)`(`r round(std.error(WL2$Ask.Match),2)`) & `r round(Ask.ttest$statistic,2)` & `r round(Ask.ttest$conf.int,2)` \\
+#     Endorse & `r round(Word.ttest$estimate,2)`(`r round(std.error(WL2$Word.Match),2)`) & `r round(Word.ttest$statistic,2)` & `r round(Word.ttest$conf.int,2)` \\
+#   \end{tabular}
+# \end{center}
+```
+```{r}
+ggplot(data=WL2, aes(WL2$AgIndex)) + geom_histogram(breaks=seq(0, 3, by = .33))
+ggplot(data=WL2, aes(WL2$ExpIndex)) + geom_histogram(breaks=seq(0, 3, by = .33))
+ggplot(data=WL2, aes(WL2$MindIndex)) + geom_histogram(breaks=seq(0, 3, by = .33))
+```
+
+
+```{r correlations_IV}
+#Calculate correlations between aggregates and test questions
+
+#Agency and experience
+cor.test(WL2$AgIndex,WL2$ExpIndex)
+ggplot(WL2, aes(AgIndex,ExpIndex)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+
+#Age and experience
+cor.test(WL2$Age,WL2$ExpIndex)
+ggplot(WL2, aes(Age,ExpIndex)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+
+#Ask and experience
+cor.test(WL2$Ask.Match,WL2$ExpIndex)
+ggplot(WL2, aes(ExpIndex,Ask.Match)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+
+#Word and experience
+cor.test(WL2$Word.Match,WL2$ExpIndex)
+ggplot(WL2, aes(ExpIndex,Ask.Match)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+
+#Age and agency
+cor.test(WL2$Age,WL2$AgIndex)
+ggplot(WL2, aes(Age,AgIndex)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+
+#Ask and agency
+cor.test(WL2$Ask.Match,WL2$AgIndex)
+ggplot(WL2, aes(AgIndex,Ask.Match)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+
+#Word and agency
+cor.test(WL2$Word.Match,WL2$AgIndex)
+ggplot(WL2, aes(AgIndex,Word.Match)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+```
+
+#Predicting Total Correct
+```{r correlations, fig.height=7,fig.width=8}
+#Agency
+cor.test(WL2$Total,WL2$AgIndex)
+AgencyTotal.Data = data.frame(Endorsement = WL2$Total, Agency = WL2$AgIndex)
+
+AgencyPlot = ggplot(AgencyTotal.Data, aes(Agency,Endorsement))
+AgencyPlot +  geom_point(position = position_jitter(w = 0.05, h = 0.05)) + geom_smooth(method=lm) +
+  labs(y="Proportion of Correct Responses") + 
+  theme(text = element_text(size=28,family="Tw Cen MT"), 
+                axis.text.x = element_text(size=20),
+                axis.title.x = element_text(vjust=0.1),
+                axis.text.y=element_text(angle=90, hjust=.5, size=16),
+                axis.title.y=element_text(margin=margin(0,20,0,0),size=24))
+
+#Experience
+cor.test(WL2$Total,WL2$ExpIndex)
+ExpTotal.Data = data.frame(Endorsement = WL2$Total, Experience = WL2$ExpIndex)
+
+ExpPlot = ggplot(ExpTotal.Data, aes(Experience,Endorsement))
+ExpPlot +  geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+```
+
+##Regression Analyses
+```{r regressions}
+#assess which predictors predict responses to test questions
+#summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent,data=WL2))
+#summary(glm(Word.Match~ExpIndex.cent*AgIndex.cent,data=WL2))
+summary(glm(Total~ExpIndex.cent+AgIndex.cent,data=WL2))
+lm.beta(glm(Total~ExpIndex.cent+AgIndex.cent,data=WL2))
+
+summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL2))
+
+summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex,data=WL2))
+
+summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL2))
+pander(summary(lm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL2)))
+lm.beta(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL2))
+
+summary(glm(Total~AgIndex.cent+Age.cent,data=WL2))
+
+#plot(WL2$Total~WL2$AgIndex.cent,col=color,xlab='Agency',ylab='Performance',main="",lwd=4)
+#abline(lm(Total~AgIndex.cent+Age.cent+Sex,data=WL2),col=color,lwd=4)
+
+summary(glm(Total.bin~ExpIndex.cent+AgIndex.cent+Age.cent+Sex,data=WL2,family="binomial"))
+
+```
+
+```{r regression_mind}
+
+#assess which predictors predict responses to test questions
+
+summary(glm(Total~MindIndex.cent,data=WL2))
+
+summary(glm(Total~MindIndex.cent+Age.cent,data=WL2))
+
+summary(glm(Total~MindIndex.cent+Age.cent+Sex,data=WL2))
+summary(glm(Total~MindIndex.cent+Sex,data=WL2))
+```
+
+```{r}
+WL2.mind = WL2[c("AgIndex","ExpIndex","Subject")]
+names(WL2.mind) = c("Agency","Experience","Participant")
+mind = melt(WL2.mind,id='Participant')
+names(mind) = c("Participant","Attributions of Mind","Responses")
+
+performance <- aggregate(mind$Responses,
+    by = list("Attributions of Mind" = mind$`Attributions of Mind`),
+    FUN = function(x) c(mean = mean(x,na.rm=T), sd = sd(x,na.rm=T), n = length(x)))
+
+performance <- do.call(data.frame, performance)
+performance$CI <- qt(0.975,df=performance$x.n-1)*performance$x.sd/sqrt(performance$x.n)
+
+performance = performance[c("Attributions.of.Mind","x.mean","CI")]
+names(performance) = c("Attributions of Mind","Responses","CI")
+
+ggplot(data = performance, aes(x = `Attributions of Mind`, y = `Responses`, fill = `Attributions of Mind`)) + 
+  guides(fill=FALSE) + 
+  geom_bar(width = .5, position=position_dodge(), stat="identity") + 
+  geom_errorbar(aes(ymin=performance$Responses-performance$CI, ymax=performance$Responses+performance$CI),
+                width=.1,
+                size = 1.2, # Width of the error bars
+                position=position_dodge(.65)) + 
+  labs(y="Responses") +
+  theme(text = element_text(size=28,family="Tw Cen MT"),
+        axis.text.x = element_text(size=20),
+        axis.title.x = element_text(vjust=0.1),
+        axis.text.y=element_text(angle=90, hjust=.5, size=16),
+        axis.title.y=element_text(margin=margin(0,20,0,0),size=24))
+```
+
