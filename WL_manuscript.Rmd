@@ -333,7 +333,10 @@ chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'),
                                        paste(round(Ask.ttest$conf.int[1],2),
                                              round(Ask.ttest$conf.int[2],2),sep=","),
                                        paste(round(Word.ttest$conf.int[1],2),
-                                             round(Word.ttest$conf.int[2],2),sep=","))
+                                             round(Word.ttest$conf.int[2],2),sep=",")),
+                          'p' = c(paste(round(EJ.ttest$p.value,4)),
+                                  paste(round(Ask.ttest$p.value,4)),
+                                  paste(round(Word.ttest$p.value,4)))
                           )
 
 pander(chance.table,style = 'rmarkdown')
@@ -825,7 +828,10 @@ chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'),
                                        paste(round(Ask.ttest$conf.int[1],2),
                                              round(Ask.ttest$conf.int[2],2),sep=","),
                                        paste(round(Word.ttest$conf.int[1],2),
-                                             round(Word.ttest$conf.int[2],2),sep=","))
+                                             round(Word.ttest$conf.int[2],2),sep=",")),
+                          'p' = c(paste(round(EJ.ttest$p.value,4)),
+                                  paste(round(Ask.ttest$p.value,4)),
+                                  paste(round(Word.ttest$p.value,4)))
                           )
 
 pander(chance.table,style = 'rmarkdown')
