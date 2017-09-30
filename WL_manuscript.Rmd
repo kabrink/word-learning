@@ -203,24 +203,17 @@ WL1$Age.cent = scale(WL1$Age,center=T,scale=T)
 WL1$MindIndex.cent = scale(WL1$MindIndex,center=T,scale=T)
 ```
 
-```{r WL1_excluding}
+```{r WL1_no_shows}
 WL1 = WL1[!is.na(WL1$Fam.Match),]
 WL1 = WL1[WL1$Subject!="Test",]
 WL1 = WL1[WL1$Subject!="Test2",]
 
 WL1$Subject = factor(WL1$Subject)
 WL1 = WL1[!is.na(WL1$Subject),]
-WL1 = WL1[which(WL1$Subject!="051TT"),] 
-#Should not use data. Mom said his English is much weaker than his Slovak and he might not understand the questions
 
-WL1 = WL1[!grepl("Fuss out",WL1$Comments),]
-WL1 = WL1[!grepl("Quit early",WL1$Comments),]
-WL1 = WL1[!grepl("Didn't answer any of the novel objects",WL1$Comments),]
-WL1 = WL1[!grepl("Wouldn't answer novel object questions",WL1$Comments),]
+#No Show
 WL1 = WL1[!grepl("No show",WL1$Comments),]
 WL1 = WL1[!grepl("Canceled right before study",WL1$Comments),]
-WL1 = WL1[!grepl("Very shy. Dad gave advice on how to answer.",WL1$Comments),]
-
 ```
 
 ```{r WL1_demographics}
@@ -247,6 +240,42 @@ The first date of test was `r min(WL1$DOT)`.
 
 The most recent date of test was `r max(WL1$DOT)`.
 
+```{r WL1_excluding}
+#Non-native English Speaker
+WL1 = WL1[which(WL1$Subject!="051TT"),] 
+#Should not use data. Mom said his English is much weaker than his Slovak and he might not understand the questions
+
+#Asked to end early
+WL1 = WL1[!grepl("Fuss out",WL1$Comments),]
+WL1 = WL1[!grepl("Quit early",WL1$Comments),]
+WL1 = WL1[!grepl("Didn't answer any of the novel objects",WL1$Comments),]
+WL1 = WL1[!grepl("Wouldn't answer novel object questions",WL1$Comments),]
+
+#Parent interference
+WL1 = WL1[!grepl("Very shy. Dad gave advice on how to answer.",WL1$Comments),]
+```
+
+1 participant was excluded for being a non-native english speaker.
+
+4 participants asked to end early
+
+1 participant had parent interference.
+
+There are now `r dim(WL1)[1]` participants.
+
+The average age of the sample is `r round(mean(WL1$Age), digits = 2)` months.
+
+The median age of the sample is `r round(median(WL1$Age), digits = 2)` months.
+
+The minimum age of the sample is `r round(min(WL1$Age), digits = 2)` months.
+
+The maximum age of the sample is `r round(max(WL1$Age), digits = 2)` months.
+
+There are `r sum(WL1$Sex == "Female")` females in the sample.
+
+The first date of test was `r min(WL1$DOT)`.
+
+The most recent date of test was `r max(WL1$DOT)`.
 
 ```{r WL1_descriptives}
 #calculate summary statistics for age of sample
@@ -277,6 +306,22 @@ pander(table(WL1$Order),caption = 'Distribution by Order of Presentation after r
 ```
 
 Now there are `r dim(WL1)[1]` participants after removing for familiarization errors. 
+
+There are `r dim(WL1)[1]` participants.
+
+The average age of the sample is `r round(mean(WL1$Age), digits = 2)` months.
+
+The median age of the sample is `r round(median(WL1$Age), digits = 2)` months.
+
+The minimum age of the sample is `r round(min(WL1$Age), digits = 2)` months.
+
+The maximum age of the sample is `r round(max(WL1$Age), digits = 2)` months.
+
+There are `r sum(WL1$Sex == "Female")` females in the sample.
+
+The first date of test was `r min(WL1$DOT)`.
+
+The most recent date of test was `r max(WL1$DOT)`.
 
 ```{r WL1_exploration}
 t.test(WL1$Total~WL1$Sex)
@@ -687,19 +732,16 @@ WL2$Age.cent = scale(WL2$Age,center=T,scale=T)
 WL2$MindIndex.cent = scale(WL2$MindIndex,center=T,scale=T)
 ```
 
-```{r WL2_excluding}
+```{r WL2_no_shows}
 WL2 = WL2[!is.na(WL2$Fam.Match),]
 WL2 = WL2[WL2$Subject!="Test",]
 WL2 = WL2[WL2$Subject!="Test2",]
 WL2 = WL2[!is.na(WL2$Subject),]
-WL2 = WL2[!grepl("Parent intereference",WL2$Comments),]
-WL2 = WL2[!grepl("Participant not focused at all, may have had a developmental disability",WL2$Comments),]
-WL2 = WL2[!grepl("Answered in foreign language. Very shy.",WL2$Comments),]
-WL2 = WL2[!grepl("They arrived 20 minutes late and the mother tried to rush the entire interview. Had to end early because the interview was taking too long for the mother's liking",WL2$Comments),]
-WL2$Sex[grepl("The child is a girl, accidentally put that she was a boy",WL2$Comments)] = "Female"
-#WL2 = WL2[WL2$DOT<as.Date("2017-06-04"),]
-```
 
+#correction
+WL2$Sex[grepl("The child is a girl, accidentally put that she was a boy",WL2$Comments)] = "Female"
+
+```
 
 ##Demographics
 ```{r WL2_demographics}
@@ -726,6 +768,40 @@ The first date of test was `r min(WL2$DOT)`.
 
 The most recent date of test was `r max(WL2$DOT)`.
 
+```{r WL2_excluding}
+#parent interference
+WL2 = WL2[!grepl("Parent intereference",WL2$Comments),]
+
+#non-native english speaker
+WL2 = WL2[!grepl("Answered in foreign language. Very shy.",WL2$Comments),]
+
+#ended early
+WL2 = WL2[!grepl("They arrived 20 minutes late and the mother tried to rush the entire interview. Had to end early because the interview was taking too long for the mother's liking",WL2$Comments),]
+WL2 = WL2[!grepl("Participant not focused at all, may have had a developmental disability",WL2$Comments),]
+```
+
+
+1 participant was excluded for being a non-native english speaker.
+
+2 participants asked to end early
+
+1 participant had parent interference.
+
+There are now `r dim(WL2)[1]` participants.
+
+The average age of the sample is `r round(mean(WL2$Age), digits = 2)` months.
+
+The median age of the sample is `r round(median(WL2$Age), digits = 2)` months.
+
+The minimum age of the sample is `r round(min(WL2$Age), digits = 2)` months.
+
+The maximum age of the sample is `r round(max(WL2$Age), digits = 2)` months.
+
+There are `r sum(WL2$Sex == "Female")` females in the sample.
+
+The first date of test was `r min(WL2$DOT)`.
+
+The most recent date of test was `r max(WL2$DOT)`.
 
 ```{r WL2_descriptives}
 #calculate summary statistics for age of sample
