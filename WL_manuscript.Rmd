@@ -207,9 +207,29 @@ WL1$MindIndex.cent = scale(WL1$MindIndex,center=T,scale=T)
 WL1 = WL1[!is.na(WL1$Fam.Match),]
 WL1 = WL1[WL1$Subject!="Test",]
 WL1 = WL1[WL1$Subject!="Test2",]
+
+WL1$Subject = factor(WL1$Subject)
+WL1 = WL1[!is.na(WL1$Subject),]
+WL1 = WL1[which(WL1$Subject!="051TT"),] 
+#Should not use data. Mom said his English is much weaker than his Slovak and he might not understand the questions
+
+WL1 = WL1[!grepl("Fuss out",WL1$Comments),]
+WL1 = WL1[!grepl("Quit early",WL1$Comments),]
+WL1 = WL1[!grepl("Didn't answer any of the novel objects",WL1$Comments),]
+WL1 = WL1[!grepl("Wouldn't answer novel object questions",WL1$Comments),]
+WL1 = WL1[!grepl("No show",WL1$Comments),]
+WL1 = WL1[!grepl("Canceled right before study",WL1$Comments),]
+WL1 = WL1[!grepl("Very shy. Dad gave advice on how to answer.",WL1$Comments),]
+
 ```
 
- 
+```{r WL1_demographics}
+filename <- "/Volumes/lsa-research01/ALL STUDIES/Current Studies/Word Learning/1.0/WL1 - Demographics.csv"
+WL1_demo = read.csv(filename)
+
+WL1_demo = WL1_demo[(WL1_demo$SubID %in% WL1$Subject),]
+pander(summary(WL1_demo$Race_Ethnicity_Baby))
+```
 ##Demographics
 There are `r dim(WL1)[1]` participants.
 
@@ -272,7 +292,7 @@ pander(sd(WL1$Total), caption="Total Correct Standard Deviation")
 ```
 
 #Comparisons with chance for three test questions.
-```{r WL1_performance, fig.height=6,fig.width=8}
+```{r WL1_performance, fig.height=8,fig.width=8}
 #Report summary statistics for accuracy on judgment questions
 pander(summary(WL1$EJ.Match), caption='Proportion of Explicit Judgment Questions Correct')
 hist(WL1$EJ.Match,main='',xlab='Proportion of explicit judgment correct', col=color)
@@ -340,8 +360,8 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, fill = `Ques
                         width=.1,
                         size = 1.2, # Width of the error bars
                         position=position_dodge(.65)) + 
-  labs(y="Proportion of Correct Responses") + 
-  theme(text = element_text(size=28,family="Times New Roman"), 
+  labs(y="Proportion of Correct Responses", title="Study 1: Social Robots") + 
+  theme(text = element_text(size=28,family="Calibri"), 
                 axis.text.x = element_text(size=20),
                 axis.title.x = element_text(vjust=0.1),
                 axis.text.y=element_text(angle=90, hjust=.5, size=16),
@@ -541,9 +561,6 @@ WL2 <- rbind(WL2.A,WL2.B,WL2.C,WL2.D)
 WL2[ WL2 == "" ] = NA
 WL2[ WL2 == -99 ] = NA
 
-
-#WL2[WL2$Subject == "010AnA",]$DOB = '06/13/2012' #error in experimenter data entry
-
 #Convert categorical variables to factors
 WL2$AccurateRobot = factor(WL2$AccurateRobot)
 WL2$EJ1 = factor(WL2$EJ1)
@@ -672,9 +689,24 @@ WL2 = WL2[!is.na(WL2$Fam.Match),]
 WL2 = WL2[WL2$Subject!="Test",]
 WL2 = WL2[WL2$Subject!="Test2",]
 WL2 = WL2[!is.na(WL2$Subject),]
+WL2 = WL2[!grepl("Parent intereference",WL2$Comments),]
+WL2 = WL2[!grepl("Participant not focused at all, may have had a developmental disability",WL2$Comments),]
+WL2 = WL2[!grepl("Answered in foreign language. Very shy.",WL2$Comments),]
+WL2 = WL2[!grepl("They arrived 20 minutes late and the mother tried to rush the entire interview. Had to end early because the interview was taking too long for the mother's liking",WL2$Comments),]
+WL2$Sex[grepl("The child is a girl, accidentally put that she was a boy",WL2$Comments)] = "Female"
+#WL2 = WL2[WL2$DOT<as.Date("2017-06-04"),]
 ```
 
+
 ##Demographics
+```{r WL2_demographics}
+filename <- "/Volumes/lsa-research01/ALL STUDIES/Current Studies/Word Learning/2.0/WL2 - Demographics.csv"
+WL2_demo = read.csv(filename)
+
+WL2_demo = WL2_demo[(WL2_demo$SubID %in% WL2$Subject),]
+pander(summary(WL2_demo$Race_Ethnicity_Baby))
+```
+
 There are `r dim(WL2)[1]` participants.
 
 The average age of the sample is `r round(mean(WL2$Age), digits = 2)` months.
@@ -752,7 +784,7 @@ pander(sd(WL2$Total), caption="Total Correct Standard Deviation")
 ```
 
 #Comparisons with chance for three test questions.
-```{r WL2_performance, fig.height=6,fig.width=8}
+```{r WL2_performance, fig.height=8,fig.width=8}
 #Report summary statistics for accuracy on judgment questions
 pander(summary(WL2$EJ.Match), caption='Proportion of Explicit Judgment Questions Correct')
 hist(WL2$EJ.Match,main='',xlab='Proportion of explicit judgment correct', col=color)
@@ -820,8 +852,8 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, fill = `Ques
                         width=.1,
                         size = 1.2, # Width of the error bars
                         position=position_dodge(.65)) + 
-  labs(y="Proportion of Correct Responses") + 
-  theme(text = element_text(size=28,family="Times New Roman"), 
+  labs(y="Proportion of Correct Responses", title = "Study 2: Inanimate Machines") + 
+  theme(text = element_text(size=28,family="Calibri"), 
                 axis.text.x = element_text(size=20),
                 axis.title.x = element_text(vjust=0.1),
                 axis.text.y=element_text(angle=90, hjust=.5, size=16),
@@ -897,7 +929,7 @@ ggplot(data = performance, aes(x = `Attributions of Mind`, y = `Responses`, fill
                 size = 1.2, # Width of the error bars
                 position=position_dodge(.6)) + 
   labs(y="Responses") +
-  theme(text = element_text(size=16,family="Times New Roman"),
+  theme(text = element_text(size=16,family="Calibri"),
         #axis.text.x = element_text(size=18),
         axis.title.x = element_text(vjust=0.1,size=20),
         axis.text.y=element_text(angle=90, hjust=.5, size=16),
