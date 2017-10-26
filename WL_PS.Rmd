@@ -1,12 +1,11 @@
 ---
-title: 'Word Learning: Manuscript Analsysis'
+title: "Word Learning - Psych Science"
 author: "Kimberly A. Brink"
-date: "5/30/2017"
+date: "10/25/2017"
 output: html_document
 ---
 
 "Word Learning" is a study that assesses whether children will selectively trust a robot that provides accurate information compared to a robot that provides inaccurate information. Children watch two robots name a series of familiar objects, where one robot always names the object correctly and the other robot always incorrectly names the robot. The two robots are distingushed by their colors. 
-
 
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(fig.path='Figures/', dev=c('svg','postscript'), fig.width = 8, fig.height = 8, echo=FALSE, warning=FALSE, message=FALSE)
@@ -186,10 +185,6 @@ WL1$Total.red = rowMeans(WL1[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.
 WL1$Total.bin = factor(ifelse(WL1$Total <= mean(WL1$Total,na.rm=T), 0, 1))
 ```
 
-There were `r sum(grepl("No Show",WL1$Comments))+sum(grepl("No show",WL1$Comments))` no shows.
-There were `r sum(grepl("Cancelled",WL1$Comments))+sum(grepl("cancelled",WL1$Comments))+sum(grepl("Canceled",WL1$Comments))+sum(grepl("canceled",WL1$Comments))` cancelled appointments
-There were `r sum(grepl("Fuss out",WL1$Comments))+sum(grepl("fuss out",WL1$Comments))` fuss outs.
-
 ```{r WL1_predictors}
 #Recode perceptions of agency and experience questions
 WL1$THINK.score = ifelse(WL1$THINK=="No",0,ifelse(WL1$THINK=="A little bit",1,ifelse(WL1$THINK=="A medium amount",2,ifelse(WL1$THINK=="A lot",3,NA))))
@@ -231,22 +226,22 @@ pander(summary(WL1_demo$Race_Ethnicity_Baby))
 
 num_subs = dim(WL1)[1]
 ```
-##Demographics
+
+##Method
+###Demographics
 There are `r num_subs` participants.
 
-The average age of the sample is `r round(mean(WL1$Age), digits = 2)` months.
+The average age of the sample is `r round(mean(WL1$Age)/12, digits = 2)` months.
 
-The median age of the sample is `r round(median(WL1$Age), digits = 2)` months.
+The standard deviation age of the sample is `r round(sd(WL1$Age)/12, digits = 2)` months.
 
-The minimum age of the sample is `r round(min(WL1$Age), digits = 2)` months.
+The minimum age of the sample is `r round(min(WL1$Age)/12, digits = 2)` months.
 
-The maximum age of the sample is `r round(max(WL1$Age), digits = 2)` months.
+The maximum age of the sample is `r round(max(WL1$Age)/12, digits = 2)` months.
 
 There are `r sum(WL1$Sex == "Female")` females in the sample.
 
-The first date of test was `r min(WL1$DOT)`.
-
-The most recent date of test was `r max(WL1$DOT)`.
+###Exclusions
 
 ```{r WL1_excluding_1}
 #Non-native English Speaker
@@ -273,100 +268,56 @@ WL1 = WL1[!grepl("Very shy. Dad gave advice on how to answer.",WL1$Comments),]
 
 `r num_subs-dim(WL1)[1]` participant had parent interference.
 
-There are now `r dim(WL1)[1]` participants.
+###Reduced Demographics
+There are now `r num_subs` participants.
 
-The average age of the sample is `r round(mean(WL1$Age), digits = 2)` months.
+The average age of the sample is `r round(mean(WL1$Age)/12, digits = 2)` months.
 
-The median age of the sample is `r round(median(WL1$Age), digits = 2)` months.
+The standard deviation age of the sample is `r round(sd(WL1$Age)/12, digits = 2)` months.
 
-The minimum age of the sample is `r round(min(WL1$Age), digits = 2)` months.
+The minimum age of the sample is `r round(min(WL1$Age)/12, digits = 2)` months.
 
-The maximum age of the sample is `r round(max(WL1$Age), digits = 2)` months.
+The maximum age of the sample is `r round(max(WL1$Age)/12, digits = 2)` months.
 
 There are `r sum(WL1$Sex == "Female")` females in the sample.
 
-The first date of test was `r min(WL1$DOT)`.
-
-The most recent date of test was `r max(WL1$DOT)`.
-
 ```{r WL1_descriptives}
-#calculate summary statistics for age of sample
-panderOptions("digits", 4)
-pander(summary(WL1$Age), caption = 'Age(months)')
-hist(WL1$Age,main='',xlab='Age(months)', col=color)
-
-pander(summary(WL1$AgeYears), caption = 'Age(years)')
-hist(WL1$AgeYears, main='',xlab='Age(years)', col=color)
-
 #report how many participants completed each order of the survey
 pander(table(WL1$Order),caption = 'Distribution by Order of Presentation')
 ```
 
-##Performance during accuracy trials 
+###Performance during accuracy trials 
 ```{r WL1_accuracy_trials}
 #report summary statistics for performance during familiarization/accuracy trials
-pander(summary(WL1$Fam.Match))
-hist(WL1$Fam.Match,main='',xlab='Num correct', col=color)
 pander(table(WL1$Fam.Match),caption='Participant Count by Number of Trials Correct')
 ```
 
 ```{r WL1_familiarization_error}
 #Remove all participants that failed to correctly answer all four familiarization trials
+
 WL1 = WL1[which(WL1$Fam.Match==4),]
+
 #WL1 = WL1[which(WL1$EJ1.Match==1),]
 
 pander(table(WL1$Order),caption = 'Distribution by Order of Presentation after removing for familiarization')
 ```
 
+###Final Demographics
 Now there are `r dim(WL1)[1]` participants after removing for familiarization errors. 
 
-There are `r dim(WL1)[1]` participants.
+The average age of the sample is `r round(mean(WL1$Age)/12, digits = 2)` months.
 
-The average age of the sample is `r round(mean(WL1$Age), digits = 2)` months.
+The standard deviation age of the sample is `r round(sd(WL1$Age)/12, digits = 2)` months.
 
-The median age of the sample is `r round(median(WL1$Age), digits = 2)` months.
+The minimum age of the sample is `r round(min(WL1$Age)/12, digits = 2)` months.
 
-The minimum age of the sample is `r round(min(WL1$Age), digits = 2)` months.
-
-The maximum age of the sample is `r round(max(WL1$Age), digits = 2)` months.
+The maximum age of the sample is `r round(max(WL1$Age)/12, digits = 2)` months.
 
 There are `r sum(WL1$Sex == "Female")` females in the sample.
 
-The first date of test was `r min(WL1$DOT)`.
-
-The most recent date of test was `r max(WL1$DOT)`.
-
-```{r WL1_exploration}
-t.test(WL1$Total~WL1$Sex)
-
-pander(summary(aov(Total~Order, data=WL1)))
-
-pander(summary(glm(Total~Order+Age, data=WL1)))
-
-pander(summary(glm(Total~Order+AgIndex, data=WL1)))
-
-pander(summary(WL1$Total), caption="Total Correct Breakdown")
-pander(sd(WL1$Total), caption="Total Correct Standard Deviation")
-```
-
-#Comparisons with chance for three test questions.
-```{r WL1_performance, fig.height=8,fig.width=8}
-
-#Report summary statistics for accuracy on judgment questions
-pander(summary(WL1$EJ1.Match), caption='Proportion of Explicit Judgment Questions Correct')
-hist(WL1$EJ1.Match,main='',xlab='Proportion of explicit judgment correct', col=color)
-
-#Report summary statistics for accuracy on ask questions
-pander(summary(WL1$Ask.Match),caption='Proportion of Ask Questions correct')
-hist(WL1$Ask.Match,main='',xlab='Proportion of Ask Questions correct',col=color)
-
-#Report summary statistics for accuracy on endorse questions
-pander(summary(WL1$Word.Match), caption = 'Proportion of Endorsement Questions correct')
-hist(WL1$Word.Match, main='',xlab='Proportion of Endorsement Questions correct',col=color)
-
-pander(summary(WL1$Total), caption = 'Performance across all questions')
-hist(WL1$Total, main='',xlab='Performance',col=color)
-
+##Results
+###Comparisons with chance for three test questions.
+```{r Figure_4_left, fig.height=8,fig.width=8}
 #Compare performance to chance guessing
 EJ.ttest = t.test(WL1$EJ1.Match,mu=.5) # Ho: mu=0.5
 Ask.ttest = t.test(WL1$Ask.Match,mu=.5)
@@ -375,27 +326,27 @@ Word.ttest = t.test(WL1$Word.Match,mu=.5)
 chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'), 
                           Proportion = c(
                             paste(round(EJ.ttest$estimate,2),
-                                  '(',round(std.error(WL1$EJ.Match),2),')',sep=''), 
+                                  ' (',round(std.error(WL1$EJ.Match),2),')',sep=''), 
                             paste(round(Ask.ttest$estimate,2),
-                                  '(',round(std.error(WL1$Ask.Match),2),')',sep=''),
+                                  ' (',round(std.error(WL1$Ask.Match),2),')',sep=''),
                             paste(round(Word.ttest$estimate,2),
-                                  '(',round(std.error(WL1$Word.Match),2),')',sep='')), 
+                                  ' (',round(std.error(WL1$Word.Match),2),')',sep='')), 
                           't(df)' = c(
-                            paste(round(EJ.ttest$statistic,2),
-                                  '(',round(EJ.ttest$parameter,2),')',sep=''), 
-                            paste(round(Ask.ttest$statistic,2),
-                                  '(',round(Ask.ttest$parameter,2),')',sep=''),
-                            paste(round(Word.ttest$statistic,2),
-                                  '(',round(Word.ttest$parameter,2),')',sep='')),
+                            paste("t(",round(EJ.ttest$parameter,2),")=",
+                                  round(EJ.ttest$statistic,2),sep=''), 
+                            paste("t(",round(Ask.ttest$parameter,2),")=",
+                                  round(Ask.ttest$statistic,2),sep=''),
+                            paste("t(",round(Word.ttest$parameter,2),")=",
+                                  round(Word.ttest$statistic,2),sep='')),
+                          'p' = c(paste(round(EJ.ttest$p.value,4)),
+                                  paste(round(Ask.ttest$p.value,4)),
+                                  paste(round(Word.ttest$p.value,4))),
                           '95%CI' = c(paste(round(EJ.ttest$conf.int[1],2),
                                              round(EJ.ttest$conf.int[2],2),sep=","),
                                        paste(round(Ask.ttest$conf.int[1],2),
                                              round(Ask.ttest$conf.int[2],2),sep=","),
                                        paste(round(Word.ttest$conf.int[1],2),
-                                             round(Word.ttest$conf.int[2],2),sep=",")),
-                          'p' = c(paste(round(EJ.ttest$p.value,4)),
-                                  paste(round(Ask.ttest$p.value,4)),
-                                  paste(round(Word.ttest$p.value,4)))
+                                             round(Word.ttest$conf.int[2],2),sep=","))
                           )
 
 pander(chance.table,style = 'rmarkdown')
@@ -434,61 +385,20 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, fill = `Ques
   #scale_y_continuous(limits = c(0, 1)) + 
   geom_hline(aes(yintercept=.5),size=1.5)# +
   #scale_y_continuous(expand = c(0, 0), limits = c(0,1))
-
-t.test(WL1$EJ.Purple,mu=.5) # Ho: mu=0.5
-t.test(WL1$Ask.Purple,mu=.5)
-t.test(WL1$Word.Purple,mu=.5)
-t.test(WL1$EJ.Orange,mu=.5) # Ho: mu=0.5
-t.test(WL1$Ask.Orange,mu=.5)
-t.test(WL1$Word.Orange,mu=.5)
-
-#For future rmarkdown pdf use
-# \begin{center}
-#   \begin{tabular}{lccc}
-#     \hline
-#     Question & Proportion & t(`r EJ.ttest$parameter`) & 95\% CI\\
-#     \hline
-#     'Explicit judgment' & `r round(EJ.ttest$estimate,2)`(`r round(std.error(WL1$EJ.Match),2)`) & `r round(EJ.ttest$statistic,2)` & `r round(EJ.ttest$conf.int,2)` \\
-#     Ask & `r round(Ask.ttest$estimate,2)`(`r round(std.error(WL1$Ask.Match),2)`) & `r round(Ask.ttest$statistic,2)` & `r round(Ask.ttest$conf.int,2)` \\
-#     Endorse & `r round(Word.ttest$estimate,2)`(`r round(std.error(WL1$Word.Match),2)`) & `r round(Word.ttest$statistic,2)` & `r round(Word.ttest$conf.int,2)` \\
-#   \end{tabular}
-# \end{center}
 ```
 
+Children’s scores ranged from `r min(WL1$Total)` to `r max(WL1$Total)` (M = `r round(mean(WL1$Total),2)`, SD = `r round(sd(WL1$Total),2)`)
 
-```{r WL1_correlations_IV, include=FALSE}
-#Calculate correlations between aggregates and test questions
+###Regression Analyses
+```{r WL1_regressions}
+summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
+pander(summary(lm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1)))
+lm.beta(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
 
-#Agency and experience
-cor.test(WL1$AgIndex,WL1$ExpIndex)
-ggplot(WL1, aes(AgIndex,ExpIndex)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
-
-#Age and experience
-cor.test(WL1$Age,WL1$ExpIndex)
-ggplot(WL1, aes(Age,ExpIndex)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
-
-#Ask and experience
-cor.test(WL1$Ask.Match,WL1$ExpIndex)
-ggplot(WL1, aes(ExpIndex,Ask.Match)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
-
-#Word and experience
-cor.test(WL1$Word.Match,WL1$ExpIndex)
-ggplot(WL1, aes(ExpIndex,Ask.Match)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
-
-#Age and agency
-cor.test(WL1$Age,WL1$AgIndex)
-ggplot(WL1, aes(Age,AgIndex)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
-
-#Ask and agency
-cor.test(WL1$Ask.Match,WL1$AgIndex)
-ggplot(WL1, aes(AgIndex,Ask.Match)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
-
-#Word and agency
-cor.test(WL1$Word.Match,WL1$AgIndex)
-ggplot(WL1, aes(AgIndex,Word.Match)) + geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
+summary(glm(Total~AgIndex.cent+Age.cent,data=WL1))
 ```
 
-#Predicting Total Correct
+###Correlation with Agency
 ```{r WL1_correlations}
 #Agency
 
@@ -507,81 +417,6 @@ ggplot(AgencyTotal.Data, aes(Agency,Endorsement)) +
         axis.title.y=element_text(margin=margin(0,20,0,0),colour="white"),
         plot.background = element_rect(fill = "transparent", colour = NA),
         plot.margin = margin(10, 10, 10, 12))
-
-#Experience
-cor.test(WL1$Total,WL1$ExpIndex)
-ExpTotal.Data = data.frame(Endorsement = WL1$Total, Experience = WL1$ExpIndex)
-
-ExpPlot = ggplot(ExpTotal.Data, aes(Experience,Endorsement))
-ExpPlot +  geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
-```
-
-##Regression Analyses
-```{r WL1_regressions}
-#assess which predictors predict responses to test questions
-#summary(glm(Ask.Match~ExpIndex.cent+AgIndex.cent,data=WL1))
-#summary(glm(Word.Match~ExpIndex.cent*AgIndex.cent,data=WL1))
-summary(glm(Total~ExpIndex.cent+AgIndex.cent,data=WL1))
-lm.beta(glm(Total~ExpIndex.cent+AgIndex.cent,data=WL1))
-
-summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent,data=WL1))
-
-summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex,data=WL1))
-
-summary(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
-pander(summary(lm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1)))
-lm.beta(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
-
-summary(glm(Total~AgIndex.cent+Age.cent,data=WL1))
-
-#plot(WL1$Total~WL1$AgIndex.cent,col=color,xlab='Agency',ylab='Performance',main="",lwd=4)
-#abline(lm(Total~AgIndex.cent+Age.cent+Sex,data=WL1),col=color,lwd=4)
-
-summary(glm(Total.bin~ExpIndex.cent+AgIndex.cent+Age.cent+Sex,data=WL1,family="binomial"))
-
-```
-
-```{r WL1_regression_mind}
-
-#assess which predictors predict responses to test questions
-
-summary(glm(Total~MindIndex.cent,data=WL1))
-
-summary(glm(Total~MindIndex.cent+Age.cent,data=WL1))
-
-summary(glm(Total~MindIndex.cent+Age.cent+Sex,data=WL1))
-summary(glm(Total~MindIndex.cent+Sex,data=WL1))
-```
-
-```{r WL1_mind_plot}
-WL1.mind = WL1[c("AgIndex","ExpIndex","Subject")]
-names(WL1.mind) = c("Agency","Experience","Participant")
-mind = melt(WL1.mind,id='Participant')
-names(mind) = c("Participant","Attributions of Mind","Responses")
-
-performance <- aggregate(mind$Responses,
-    by = list("Attributions of Mind" = mind$`Attributions of Mind`),
-    FUN = function(x) c(mean = mean(x,na.rm=T), sd = sd(x,na.rm=T), n = length(x)))
-
-performance <- do.call(data.frame, performance)
-performance$CI <- qt(0.975,df=performance$x.n-1)*performance$x.sd/sqrt(performance$x.n)
-
-performance = performance[c("Attributions.of.Mind","x.mean","CI")]
-names(performance) = c("Attributions of Mind","Responses","CI")
-
-ggplot(data = performance, aes(x = `Attributions of Mind`, y = `Responses`, fill = `Attributions of Mind`)) + 
-  guides(fill=FALSE) + 
-  geom_bar(width = .5, position=position_dodge(), stat="identity") + 
-  geom_errorbar(aes(ymin=performance$Responses-performance$CI, ymax=performance$Responses+performance$CI),
-                width=.1,
-                size = 1.2, # Width of the error bars
-                position=position_dodge(.65)) + 
-  labs(y="Responses") +
-  theme(text = element_text(size=28,family="Corbel"),
-        axis.text.x = element_text(size=20),
-        axis.title.x = element_text(vjust=0.1),
-        axis.text.y=element_text(angle=90, hjust=.5, size=16),
-        axis.title.y=element_text(margin=margin(0,20,0,0),size=24))
 ```
 
 #Word Learning 2: Control Study
@@ -733,12 +568,6 @@ WL2$Total.red = rowMeans(WL2[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.
 WL2$Total.bin = factor(ifelse(WL2$Total <= mean(WL2$Total,na.rm=T), 0, 1))
 ```
 
-There were `r sum(grepl("No Show",WL2$Comments))+sum(grepl("No show",WL2$Comments))` no shows.
-There were `r sum(grepl("Cancelled",WL2$Comments))+sum(grepl("cancelled",WL2$Comments))+sum(grepl("Canceled",WL2$Comments))+sum(grepl("canceled",WL2$Comments))` cancelled appointments
-There were `r sum(grepl("Fuss out",WL2$Comments))+sum(grepl("fuss out",WL2$Comments))` fuss outs.
-There were `r sum(is.na(WL2$Assent))` children that did not assent.
-
-
 ```{r WL2_predictors}
 #Recode perceptions of agency and experience questions
 WL2$THINK.score = ifelse(WL2$THINK=="No",0,ifelse(WL2$THINK=="A little bit",1,ifelse(WL2$THINK=="A medium amount",2,ifelse(WL2$THINK=="A lot",3,NA))))
@@ -769,75 +598,72 @@ WL2$Sex[grepl("The child is a girl, accidentally put that she was a boy",WL2$Com
 
 ```
 
-##Demographics
+##Method
+###Demographics
 ```{r WL2_demographics}
 filename <- "/Volumes/lsa-research01/ALL STUDIES/Current Studies/Word Learning/2.0/WL2 - Demographics.csv"
 WL2_demo = read.csv(filename)
 
 WL2_demo = WL2_demo[(WL2_demo$SubID %in% WL2$Subject),]
 pander(summary(WL2_demo$Race_Ethnicity_Baby))
+
+num_subs = dim(WL2)[1]
 ```
 
-There are `r dim(WL2)[1]` participants.
+There are `r num_subs` participants.
 
-The average age of the sample is `r round(mean(WL2$Age), digits = 2)` months.
+The average age of the sample is `r round(mean(WL2$Age)/12, digits = 2)` months.
 
-The median age of the sample is `r round(median(WL2$Age), digits = 2)` months.
+The standard devation of the age of the sample is `r round(sd(WL2$Age/12), digits = 2)` months.
 
-The minimum age of the sample is `r round(min(WL2$Age), digits = 2)` months.
+The minimum age of the sample is `r round(min(WL2$Age)/12, digits = 2)` months.
 
-The maximum age of the sample is `r round(max(WL2$Age), digits = 2)` months.
+The maximum age of the sample is `r round(max(WL2$Age)/12, digits = 2)` months.
 
 There are `r sum(WL2$Sex == "Female")` females in the sample.
 
-The first date of test was `r min(WL2$DOT)`.
-
-The most recent date of test was `r max(WL2$DOT)`.
-
-```{r WL2_excluding}
+###Exclusions
+```{r WL2_excluding_1}
 #parent interference
 WL2 = WL2[!grepl("Parent intereference",WL2$Comments),]
+```
+
+`r num_subs-dim(WL2)[1]` participant was excluded for being a non-native english speaker.
+
+```{r WL2_excluding_2}
+num_subs = dim(WL2)[1]
 
 #non-native english speaker
 WL2 = WL2[!grepl("Answered in foreign language. Very shy.",WL2$Comments),]
+```
+
+`r num_subs-dim(WL2)[1]` participants asked to end early
+
+```{r WL2_excluding_3}
+num_subs = dim(WL2)[1]
 
 #ended early
 WL2 = WL2[!grepl("They arrived 20 minutes late and the mother tried to rush the entire interview. Had to end early because the interview was taking too long for the mother's liking",WL2$Comments),]
 WL2 = WL2[!grepl("Participant not focused at all, may have had a developmental disability",WL2$Comments),]
 ```
 
+`r num_subs-dim(WL2)[1]` participant had parent interference.
 
-1 participant was excluded for being a non-native english speaker.
-
-2 participants asked to end early
-
-1 participant had parent interference.
+###Reduced Demographics
 
 There are now `r dim(WL2)[1]` participants.
 
-The average age of the sample is `r round(mean(WL2$Age), digits = 2)` months.
+The average age of the sample is `r round(mean(WL2$Age)/12, digits = 2)` months.
 
-The median age of the sample is `r round(median(WL2$Age), digits = 2)` months.
+The standard devaition of the age of the sample is `r round(sd(WL2$Age/12), digits = 2)` months.
 
-The minimum age of the sample is `r round(min(WL2$Age), digits = 2)` months.
+The minimum age of the sample is `r round(min(WL2$Age)/12, digits = 2)` months.
 
-The maximum age of the sample is `r round(max(WL2$Age), digits = 2)` months.
+The maximum age of the sample is `r round(max(WL2$Age)/12, digits = 2)` months.
 
 There are `r sum(WL2$Sex == "Female")` females in the sample.
 
-The first date of test was `r min(WL2$DOT)`.
-
-The most recent date of test was `r max(WL2$DOT)`.
-
 ```{r WL2_descriptives}
-#calculate summary statistics for age of sample
-panderOptions("digits", 4)
-pander(summary(WL2$Age), caption = 'Age(months)')
-hist(WL2$Age,main='',xlab='Age(months)', col=color)
-
-pander(summary(WL2$AgeYears), caption = 'Age(years)')
-hist(WL2$AgeYears, main='',xlab='Age(years)', col=color)
-
 #report how many participants completed each order of the survey
 pander(table(WL2$Order),caption = 'Distribution by Order of Presentation')
 ```
@@ -845,8 +671,6 @@ pander(table(WL2$Order),caption = 'Distribution by Order of Presentation')
 ##Performance during accuracy trials 
 ```{r WL2_accuracy_trials}
 #report summary statistics for performance during familiarization/accuracy trials
-pander(summary(WL2$Fam.Match))
-hist(WL2$Fam.Match,main='',xlab='Num correct', col=color)
 pander(table(WL2$Fam.Match),caption='Participant Count by Number of Trials Correct')
 ```
 
@@ -858,54 +682,24 @@ WL2 = WL2[which(WL2$Fam.Match==4),]
 pander(table(WL2$Order),caption = 'Distribution by Order of Presentation after removing for familiarization')
 ```
 
+###Final Demographics
 Now there are `r dim(WL2)[1]` participants after removing for familiarization errors. 
 
 There are `r dim(WL2)[1]` participants.
 
-The average age of the sample is `r round(mean(WL2$Age), digits = 2)` months.
+The average age of the sample is `r round(mean(WL2$Age)/12, digits = 2)` months.
 
-The median age of the sample is `r round(median(WL2$Age), digits = 2)` months.
+The standard devaition of the age of the sample is `r round(sd(WL2$Age/12), digits = 2)` months.
 
-The minimum age of the sample is `r round(min(WL2$Age), digits = 2)` months.
+The minimum age of the sample is `r round(min(WL2$Age)/12, digits = 2)` months.
 
-The maximum age of the sample is `r round(max(WL2$Age), digits = 2)` months.
+The maximum age of the sample is `r round(max(WL2$Age)/12, digits = 2)` months.
 
 There are `r sum(WL2$Sex == "Female")` females in the sample.
 
-The first date of test was `r min(WL2$DOT)`.
-
-The most recent date of test was `r max(WL2$DOT)`.
-
-```{r WL2_exploration}
-#t.test(WL2$Total~WL2$Sex)
-
-pander(summary(aov(Total~Order, data=WL2)))
-
-pander(summary(glm(Total~Order+Age, data=WL2)))
-
-pander(summary(glm(Total~Order+AgIndex, data=WL2)))
-
-pander(summary(WL2$Total), caption="Total Correct Breakdown")
-pander(sd(WL2$Total), caption="Total Correct Standard Deviation")
-```
-
-#Comparisons with chance for three test questions.
-```{r WL2_performance, fig.height=8,fig.width=8}
-#Report summary statistics for accuracy on judgment questions
-pander(summary(WL2$EJ1.Match), caption='Proportion of Explicit Judgment Questions Correct')
-hist(WL2$EJ1.Match,main='',xlab='Proportion of explicit judgment correct', col=color)
-
-#Report summary statistics for accuracy on ask questions
-pander(summary(WL2$Ask.Match),caption='Proportion of Ask Questions correct')
-hist(WL2$Ask.Match,main='',xlab='Proportion of Ask Questions correct',col=color)
-
-#Report summary statistics for accuracy on endorse questions
-pander(summary(WL2$Word.Match), caption = 'Proportion of Endorsement Questions correct')
-hist(WL2$Word.Match, main='',xlab='Proportion of Endorsement Questions correct',col=color)
-
-pander(summary(WL2$Total), caption = 'Performance across all questions')
-hist(WL2$Total, main='',xlab='Performance',col=color)
-
+##Results
+###Comparisons with chance for three test questions.
+```{r Figure_4_right, fig.height=8,fig.width=8}
 #Compare performance to chance guessing
 EJ.ttest = t.test(WL2$EJ1.Match,mu=.5) # Ho: mu=0.5
 Ask.ttest = t.test(WL2$Ask.Match,mu=.5)
@@ -914,27 +708,27 @@ Word.ttest = t.test(WL2$Word.Match,mu=.5)
 chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'), 
                           Proportion = c(
                             paste(round(EJ.ttest$estimate,2),
-                                  '(',round(std.error(WL2$EJ.Match),2),')',sep=''), 
+                                  ' (',round(std.error(WL2$EJ.Match),2),')',sep=''), 
                             paste(round(Ask.ttest$estimate,2),
-                                  '(',round(std.error(WL2$Ask.Match),2),')',sep=''),
+                                  ' (',round(std.error(WL2$Ask.Match),2),')',sep=''),
                             paste(round(Word.ttest$estimate,2),
-                                  '(',round(std.error(WL2$Word.Match),2),')',sep='')), 
+                                  ' (',round(std.error(WL2$Word.Match),2),')',sep='')), 
                           't(df)' = c(
-                            paste(round(EJ.ttest$statistic,2),
-                                  '(',round(EJ.ttest$parameter,2),')',sep=''), 
-                            paste(round(Ask.ttest$statistic,2),
-                                  '(',round(Ask.ttest$parameter,2),')',sep=''),
-                            paste(round(Word.ttest$statistic,2),
-                                  '(',round(Word.ttest$parameter,2),')',sep='')),
+                            paste("t(",round(EJ.ttest$parameter,2),")=",
+                                  round(EJ.ttest$statistic,2),sep=''), 
+                            paste("t(",round(Ask.ttest$parameter,2),")=",
+                                  round(Ask.ttest$statistic,2),sep=''),
+                            paste("t(",round(Word.ttest$parameter,2),")=",
+                                  round(Word.ttest$statistic,2),sep='')),
+                          'p' = c(paste(round(EJ.ttest$p.value,4)),
+                                  paste(round(Ask.ttest$p.value,4)),
+                                  paste(round(Word.ttest$p.value,4))),
                           '95%CI' = c(paste(round(EJ.ttest$conf.int[1],2),
                                              round(EJ.ttest$conf.int[2],2),sep=","),
                                        paste(round(Ask.ttest$conf.int[1],2),
                                              round(Ask.ttest$conf.int[2],2),sep=","),
                                        paste(round(Word.ttest$conf.int[1],2),
-                                             round(Word.ttest$conf.int[2],2),sep=",")),
-                          'p' = c(paste(round(EJ.ttest$p.value,4)),
-                                  paste(round(Ask.ttest$p.value,4)),
-                                  paste(round(Word.ttest$p.value,4)))
+                                             round(Word.ttest$conf.int[2],2),sep=","))
                           )
 
 pander(chance.table,style = 'rmarkdown')
@@ -973,37 +767,13 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, fill = `Ques
   scale_y_continuous(limits = c(0, 1)) + 
   geom_hline(aes(yintercept=.5),size=2)# +
   #scale_y_continuous(expand = c(0, 0), limits = c(0,1.2))
-
-t.test(WL2$EJ.Purple,mu=.5) # Ho: mu=0.5
-t.test(WL2$Ask.Purple,mu=.5)
-t.test(WL2$Word.Purple,mu=.5)
-t.test(WL2$EJ.Orange,mu=.5) # Ho: mu=0.5
-t.test(WL2$Ask.Orange,mu=.5)
-t.test(WL2$Word.Orange,mu=.5)
-
-#For future rmarkdown pdf use
-# \begin{center}
-#   \begin{tabular}{lccc}
-#     \hline
-#     Question & Proportion & t(`r EJ.ttest$parameter`) & 95\% CI\\
-#     \hline
-#     'Explicit judgment' & `r round(EJ.ttest$estimate,2)`(`r round(std.error(WL2$EJ.Match),2)`) & `r round(EJ.ttest$statistic,2)` & `r round(EJ.ttest$conf.int,2)` \\
-#     Ask & `r round(Ask.ttest$estimate,2)`(`r round(std.error(WL2$Ask.Match),2)`) & `r round(Ask.ttest$statistic,2)` & `r round(Ask.ttest$conf.int,2)` \\
-#     Endorse & `r round(Word.ttest$estimate,2)`(`r round(std.error(WL2$Word.Match),2)`) & `r round(Word.ttest$statistic,2)` & `r round(Word.ttest$conf.int,2)` \\
-#   \end{tabular}
-# \end{center}
 ```
 
-```{r WL2_mind}
-ggplot(data=WL2, aes(WL2$AgIndex)) + geom_histogram(breaks=seq(0, 3, by = .33))
-ggplot(data=WL2, aes(WL2$ExpIndex)) + geom_histogram(breaks=seq(0, 3, by = .33))
-ggplot(data=WL2, aes(WL2$MindIndex)) + geom_histogram(breaks=seq(0, 3, by = .33))
-```
+Children’s scores ranged from `r min(WL2$Total)` to `r max(WL2$Total)` (M = `r round(mean(WL2$Total),2)`, SD = `r round(sd(WL2$Total),2)`)
 
-#Predicting Total Correct
+###Correlation with Agency
 ```{r WL2_correlations}
 #Agency
-
 cor.test(WL2$Total,WL2$AgIndex)
 AgencyTotal.Data = data.frame(Endorsement = WL2$Total, Agency = WL2$AgIndex)
 
@@ -1018,13 +788,6 @@ ggplot(AgencyTotal.Data, aes(Agency,Endorsement)) +
         axis.text.y=element_text(angle=90, hjust=.5, size=32,colour="white"),
         axis.title.y=element_text(margin=margin(0,20,0,0),colour="white"),
         plot.background = element_rect(fill = "transparent", colour = NA))
-
-#Experience
-cor.test(WL2$Total,WL2$ExpIndex)
-ExpTotal.Data = data.frame(Endorsement = WL2$Total, Experience = WL2$ExpIndex)
-
-ExpPlot = ggplot(ExpTotal.Data, aes(Experience,Endorsement))
-ExpPlot +  geom_point(position = position_jitter(w = 0.2, h = 0.2)) + geom_smooth(method=lm)
 ```
 
 
@@ -1066,6 +829,7 @@ performance = rbind(WL1.performance,WL2.performance)
 
 ggplot(data = performance, aes(x = `Attributions of Mind`, y = `Responses`, fill = `Agent`)) + 
   geom_bar(width = .6, position=position_dodge(), stat="identity") + 
+  scale_fill_manual(values=wes_palette(n=3, name=wesanderson)) +
   geom_errorbar(aes(ymin=performance$Responses-performance$CI, ymax=performance$Responses+performance$CI),
                 width=.1,
                 size = 1.2, # Width of the error bars
@@ -1077,15 +841,43 @@ ggplot(data = performance, aes(x = `Attributions of Mind`, y = `Responses`, fill
         axis.text.y=element_text(angle=90, hjust=.5, size=16),
         axis.title.y=element_text(margin=margin(0,20,0,0),size=20))
 
-t.test(WL1.mind$Responses[WL1.mind$`Attributions of Mind`=="Agency"],WL2.mind$Responses[WL2.mind$`Attributions of Mind`=="Agency"],paired=FALSE)
+agency.ttest = t.test(WL1.mind$Responses[WL1.mind$`Attributions of Mind`=="Agency"],WL2.mind$Responses[WL2.mind$`Attributions of Mind`=="Agency"],paired=FALSE)
 
-t.test(WL1.mind$Responses[WL1.mind$`Attributions of Mind`=="Experience"],WL2.mind$Responses[WL2.mind$`Attributions of Mind`=="Experience"],paired=FALSE)
+exp.ttest = t.test(WL1.mind$Responses[WL1.mind$`Attributions of Mind`=="Experience"],WL2.mind$Responses[WL2.mind$`Attributions of Mind`=="Experience"],paired=FALSE)
 
-t.test(WL1.mind$Responses[WL1.mind$`Attributions of Mind`=="Mind"],WL2.mind$Responses[WL2.mind$`Attributions of Mind`=="Mind"],paired=FALSE)
+mind.ttest = t.test(WL1.mind$Responses[WL1.mind$`Attributions of Mind`=="Mind"],WL2.mind$Responses[WL2.mind$`Attributions of Mind`=="Mind"],paired=FALSE)
+```
+
+```{r comparing_WL1_WL2}
+chance.table = data.frame(Factor = c('Agency','Experience','Mind'), 
+                          Difference = c(
+                            paste(round(agency.ttest$estimate[1]-agency.ttest$estimate[2],2),sep=''), 
+                            paste(round(exp.ttest$estimate[1]-exp.ttest$estimate[2],2),sep=''),
+                            paste(round(mind.ttest$estimate[1]-mind.ttest$estimate[2],2),sep='')), 
+                          't(df)' = c(
+                            paste("t(",round(agency.ttest$parameter,2),")=",
+                                  round(agency.ttest$statistic,2),sep=''), 
+                            paste("t(",round(exp.ttest$parameter,2),")=",
+                                  round(exp.ttest$statistic,2),sep=''),
+                            paste("t(",round(mind.ttest$parameter,2),")=",
+                                  round(mind.ttest$statistic,2),sep='')),
+                          'p' = c(paste(round(agency.ttest$p.value,4)),
+                                  paste(round(exp.ttest$p.value,4)),
+                                  paste(round(mind.ttest$p.value,4))),
+                          '95%CI' = c(paste(round(agency.ttest$conf.int[1],2),
+                                             round(agency.ttest$conf.int[2],2),sep=","),
+                                       paste(round(exp.ttest$conf.int[1],2),
+                                             round(exp.ttest$conf.int[2],2),sep=","),
+                                       paste(round(mind.ttest$conf.int[1],2),
+                                             round(mind.ttest$conf.int[2],2),sep=","))
+                          )
+
+pander(chance.table,style = 'rmarkdown')
 ```
 
 ```{r}
 postscript("/tmp/test.eps", fonts=c("serif"))
 wes_palette(name=wesanderson,n=5)
 ```
+
 
