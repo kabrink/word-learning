@@ -1,0 +1,134 @@
+---
+title: "Word Learning 3"
+output: html_notebook
+---
+
+"Word Learning 3" is an experiment examining how children selectively trust either a robot that was 75% accurate in the past compared to a robot that was 0% correct in the past. 
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path='Figures/PS/', dev=c('svg','postscript'), fig.width = 8, fig.height = 8, echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r libraries}
+library(lubridate)
+library(pander)
+library(ggplot2)
+library(reshape2)
+library(wesanderson)
+options("scipen"=100, "digits"= 4)
+```
+
+```{r settings}
+wesanderson = "Moonrise3"
+```
+
+```{r standard_error}
+std.error <- function(x) sd(x,na.rm=TRUE)/sqrt(length(x))
+```
+
+```{r import}
+source("~/Dropbox/Research/Michigan/Dissertation - Robots/Word Learning/Private/WL3_data.R")
+```
+
+```{r format}
+#convert missing values to NA
+WL3[ WL3 == "" ] = NA
+WL3[ WL3 == -99 ] = NA
+
+#remove columns with only NAs
+#WL3 <- WL3[,colSums(is.na(WL3))<nrow(WL3)]
+
+#remove columns that start with Q (non-questions in Qualtrics survey)
+WL3 = WL3[,!grepl("Q",names(WL3))]
+WL3 = WL3[,!grepl("INS",names(WL3))]
+WL3 = WL3[,!grepl("Ins",names(WL3))]
+
+#remove specific columns
+WL3 = subset(WL3, select=-c(ResponseSet,Name,IPAddress,CANDY))
+```
+
+```{r preprocessing}
+WL3$Order = factor(WL3$Order,levels=c("A","B","C","D","E","F","G","H"))
+WL3$Order[WL3$SubID=="301CM"] = "G"
+
+WL3 = WL3[!is.na(WL3$SubID),]
+WL3 = WL3[!grepl("test",WL3$SubID,ignore.case = T),]
+WL3 = WL3[!grepl("demo",WL3$SubID,ignore.case = T),]
+
+WL3$DOB = mdy(WL3$DOB)
+WL3$StartTime = hms(WL3$StartTime)
+WL3$EndTime = hms(WL3$EndTime)
+
+WL3$Duration = WL3$EndTime - WL3$StartTime
+
+WL3$Age = year(as.period(interval(WL3$DOB, WL3$EndDate))) + 
+  month(as.period(interval(WL3$DOB, WL3$EndDate)))/12 + 
+  day(as.period(interval(WL3$DOB, WL3$EndDate)))/365
+```
+
+```{r WL1_formatting}
+#Clean the data set
+
+#Subset the data set by condition (i.e., by the order in which the robots are presented and by which robot is accurate)
+WL3.A <- subset(WL3, Order = "A")
+WL3.B <- subset(WL3, Order = "B")
+WL3.C <- subset(WL3, Order = "C")
+WL3.D <- subset(WL3, Order = "D")
+WL3.E <- subset(WL3, Order = "E")
+WL3.F <- subset(WL3, Order = "F")
+WL3.G <- subset(WL3, Order = "G")
+WL3.H <- subset(WL3, Order = "H")
+
+#remove columns with only NAs
+WL3.A <- WL3.A[,colSums(is.na(WL3.A))<nrow(WL3.A)]
+WL3.B <- WL3.B[,colSums(is.na(WL3.B))<nrow(WL3.B)]
+WL3.C <- WL3.C[,colSums(is.na(WL3.C))<nrow(WL3.C)]
+WL3.D <- WL3.D[,colSums(is.na(WL3.D))<nrow(WL3.D)]
+WL3.E <- WL3.E[,colSums(is.na(WL3.E))<nrow(WL3.E)]
+WL3.F <- WL3.F[,colSums(is.na(WL3.F))<nrow(WL3.F)]
+WL3.G <- WL3.G[,colSums(is.na(WL3.G))<nrow(WL3.G)]
+WL3.H <- WL3.H[,colSums(is.na(WL3.H))<nrow(WL3.H)]
+
+#Each condition of the survey has different question names for the same questions. 
+names(WL3.A) = sub("ACEG.", "",names(WL3.A))
+names(WL3.A) = sub("A\\.", "",names(WL3.A))
+
+names(WL3.B) = sub("BDFH.", "",names(WL3.B))
+names(WL3.B) = sub("B\\.", "",names(WL3.B))
+
+names(WL3.C) = sub("ACEG.", "",names(WL3.C))
+names(WL3.C) = sub("C\\.", "",names(WL3.C))
+
+names(WL3.D) = sub("BDFH.", "",names(WL3.D))
+names(WL3.D) = sub("D\\.", "",names(WL3.D))
+
+names(WL3.E) = sub("ACEG.", "",names(WL3.E))
+names(WL3.E) = sub("E\\.", "",names(WL3.E))
+
+names(WL3.F) = sub("BDFH.", "",names(WL3.F))
+names(WL3.F) = sub("F\\.", "",names(WL3.F))
+
+names(WL3.G) = sub("ACEG.", "",names(WL3.G))
+names(WL3.G) = sub("G\\.", "",names(WL3.G))
+
+names(WL3.H) = sub("BDFH.", "",names(WL3.H))
+names(WL3.H) = sub("H\\.", "",names(WL3.H))
+
+#Combine all data into one dataset
+WL3 <- rbind(WL3.A,WL3.B,WL3.C,WL3.D,WL3.E,WL3.F,WL3.G,WL3.H)
+```
+
+```{r RAs, eval=FALSE}
+#for giving to RAs for posters
+#WL3 = subset(WL3, select=-c(ResponseID,Status,StartDate,EndDate,Finished,Audio.Name,Audio))
+#WL3 = WL3[,!grepl("X",names(WL3))]
+#write.csv(WL3,"~/Dropbox/Research/Michigan/Dissertation - Robots/Word Learning/Private/WL3.csv")
+```
+
+```{r clean}
+#check comments
+#finish variable
+```
+
+
+

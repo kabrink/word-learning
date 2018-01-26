@@ -248,6 +248,14 @@ The first date of test was `r min(WL1$DOT)`.
 
 The most recent date of test was `r max(WL1$DOT)`.
 
+```{r}
+library(pwr)
+
+power = pwr.t.test(d = .5, sig.level = .05, power = .8, type ="one.sample")
+```
+
+Power analyses indicate that N = `r round(power$n,2)` is sufficient to achieve .80 statistical power with a moderate effect size of .5 and signficance level of p = .05 (Cohen, 1988).
+
 ```{r WL1_excluding_1}
 #Non-native English Speaker
 WL1 = WL1[which(WL1$Subject!="051TT"),] 
