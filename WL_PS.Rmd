@@ -8,7 +8,7 @@ output: html_document
 "Word Learning" is a study that assesses whether children will selectively trust a robot that provides accurate information compared to a robot that provides inaccurate information. Children watch two robots name a series of familiar objects, where one robot always names the object correctly and the other robot always incorrectly names the robot. The two robots are distingushed by their colors. 
 
 ```{r global_options, include=FALSE}
-knitr::opts_chunk$set(fig.path='Figures/PS/', dev=c('png','postscript'), fig.width = 8, fig.height = 8, fig.keep='last',echo=FALSE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(fig.path='Figures/PS/', dev=c('png','postscript'), fig.width = 4.5, fig.height = 4.5, fig.keep='last',echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
 ```{r standard_error}
@@ -179,7 +179,7 @@ WL1$Word.Orange[is.nan(WL1$Ask.Orange)]=NA
 
 WL1$Word.bin = factor(ifelse(WL1$Word.Match <= mean(WL1$Word.Match,na.rm=T), 0, 1))
 
-WL1$Total = rowMeans(WL1[c('EJ1.Match','EJ2.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL1$Total = rowMeans(WL1[c('EJ1.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
 
 WL1$Total.red = rowMeans(WL1[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
 
@@ -364,7 +364,7 @@ chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'),
 pander(chance.table,style = 'rmarkdown')
 
 WL1.perf = WL1[c("EJ1.Match","Ask.Match","Word.Match","Subject")]
-names(WL1.perf) = c("Judgment","Ask","Endorse","Participant")
+names(WL1.perf) = c("Accuracy","Ask","Endorse","Participant")
 perf = melt(WL1.perf,id='Participant')
 names(perf) = c("Participant","Question Type","Proportion")
 
@@ -401,8 +401,45 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, fill = `Ques
   labs(y="Proportion of Correct Responses", title = "Social Robots") + 
   geom_hline(aes(yintercept=.5),size=1,linetype="dashed") +
   scale_y_continuous(expand = c(0, 0), breaks=c(0,.25,.5,.75,1), limits=c(0,1.05))
-
 ```
+
+```{r WL_figure_4_prev_study}
+
+performance.sub = data.frame(`Question Type`=c("Accuracy","Ask","Endorse"),
+                             Proportion=c(.71,.70,.67),
+                             CI=c(.16,.12,.12))
+names(performance.sub) = c("Question Type","Proportion","CI")
+
+
+performance.sub$Condition = "2 Human Informants"
+performance$Condition ="1 Machine Informants"
+
+performance = rbind(performance,performance.sub)
+
+
+ggplot(data = performance, aes(x = `Question Type`, y = Proportion, group = Condition, fill = `Question Type`)) + 
+  guides(fill=FALSE) + 
+  scale_fill_manual(values=wes_palette(n=3, name=wesanderson)) +
+  geom_bar(width = .5, position=position_dodge(.65), stat="identity") + 
+  geom_errorbar(aes(ymin=performance$Proportion-performance$CI, ymax=performance$Proportion+performance$CI),
+                        width=.1,
+                        size = 1, # Width of the error bars
+                        position=position_dodge(.65)) + 
+  theme(text = element_text(size=12,family="Helvetica",colour="black"),
+        axis.text.x = element_text(size=11,colour="black"),
+        axis.title.x = element_text(vjust=0.1,colour="black"),
+        axis.text.y=element_text(angle=90, hjust=.5, size=10,colour="black"),
+        axis.title.y=element_text(margin=margin(0,10,0,0),colour="black"),
+        plot.background = element_rect(fill = "transparent", colour = NA),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) + 
+  labs(y="Proportion of Correct Responses", title = "Social Robots") + 
+  geom_hline(aes(yintercept=.5),size=1,linetype="dashed") +
+  scale_y_continuous(expand = c(0, 0), breaks=c(0,.25,.5,.75,1), limits=c(0,1.05))
+```
+
 
 Children’s scores ranged from `r min(WL1$Total)` to `r max(WL1$Total)` (M = `r round(mean(WL1$Total),2)`, SD = `r round(sd(WL1$Total),2)`)
 
@@ -437,7 +474,7 @@ chance.table = data.frame(Question = c('Ask','Endorse'),
 pander(chance.table,style = 'rmarkdown')
 
 WL1.perf = WL1.EJ1[c("EJ1.Match","Ask.Match","Word.Match","Subject")]
-names(WL1.perf) = c("Judgment","Ask","Endorse","Participant")
+names(WL1.perf) = c("Accuracy","Ask","Endorse","Participant")
 perf = melt(WL1.perf,id='Participant')
 names(perf) = c("Participant","Question Type","Proportion")
 
@@ -658,7 +695,7 @@ WL2$Word.Orange[is.nan(WL2$Ask.Orange)]=NA
 
 WL2$Word.bin = factor(ifelse(WL2$Word.Match <= mean(WL2$Word.Match,na.rm=T), 0, 1))
 
-WL2$Total = rowMeans(WL2[c('EJ1.Match','EJ2.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL2$Total = rowMeans(WL2[c('EJ1.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
 
 WL2$Total.red = rowMeans(WL2[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
 
@@ -728,6 +765,7 @@ num_subs = dim(WL2)[1]
 
 #non-native english speaker
 WL2 = WL2[!grepl("Answered in foreign language. Very shy.",WL2$Comments),]
+#WL2 = WL2[!grepl("Speaks Portuguese at home",WL2$Comments),]
 ```
 
 `r num_subs-dim(WL2)[1]` participant was excluded for being a non-native english speaker.
@@ -738,6 +776,7 @@ num_subs = dim(WL2)[1]
 #ended early
 WL2 = WL2[!grepl("They arrived 20 minutes late and the mother tried to rush the entire interview. Had to end early because the interview was taking too long for the mother's liking",WL2$Comments),]
 WL2 = WL2[!grepl("Participant not focused at all, may have had a developmental disability",WL2$Comments),]
+WL2 = WL2[!grepl("Asked to stop",WL2$Comments),]
 #WL2 = WL2[WL2$Finish=="Finished the study normally",]
 ```
 
@@ -833,7 +872,7 @@ chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'),
 pander(chance.table,style = 'rmarkdown')
 
 WL2.perf = WL2[c("EJ1.Match","Ask.Match","Word.Match","Subject")]
-names(WL2.perf) = c("Judgment","Ask","Endorse","Participant")
+names(WL2.perf) = c("Accuracy","Ask","Endorse","Participant")
 perf = melt(WL2.perf,id='Participant')
 names(perf) = c("Participant","Question Type","Proportion")
 
@@ -904,7 +943,7 @@ chance.table = data.frame(Question = c('Ask','Endorse'),
 pander(chance.table,style = 'rmarkdown')
 
 WL2sub.perf = WL2.EJ1[c("EJ1.Match","Ask.Match","Word.Match","Subject")]
-names(WL2sub.perf) = c("Judgment","Ask","Endorse","Participant")
+names(WL2sub.perf) = c("Accuracy","Ask","Endorse","Participant")
 perf = melt(WL2sub.perf,id='Participant')
 names(perf) = c("Participant","Question Type","Proportion")
 
@@ -952,7 +991,7 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, group = Samp
 
 `r dim(WL2.EJ1)[1]` out of `r dim(WL2)[1]` children answered the first explicit judgment question correctly.
 
-Children were still at chance for Ask, , t(`r Ask.ttest$parameter`) = `r round(Ask.ttest$statistic,2)`, p = `r round(Ask.ttest$p.value,4)`; and Endorsement questions, t(`r Word.ttest$parameter`) = `r round(Word.ttest$statistic,2)`, p = `r round(Word.ttest$p.value,4)`.
+Children were still at chance for Ask, `r mean(WL2.EJ1$Ask.Match,na.rm=T)`, t(`r Ask.ttest$parameter`) = `r round(Ask.ttest$statistic,2)`, p = `r round(Ask.ttest$p.value,4)`, CI 95% [`r paste(round(Ask.ttest$conf.int[1],2), round(Ask.ttest$conf.int[2],2),sep=",")`]; and Endorsement questions, `r mean(WL2.EJ1$Word.Match,na.rm=T)`, t(`r Word.ttest$parameter`) = `r round(Word.ttest$statistic,2)`, p = `r round(Word.ttest$p.value,4)`, CI 95% [`r paste(round(Word.ttest$conf.int[1],2), round(Word.ttest$conf.int[2],2),sep=",")`].
 
 ###Regression Analyses
 
