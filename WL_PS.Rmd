@@ -179,7 +179,7 @@ WL1$Word.Orange[is.nan(WL1$Ask.Orange)]=NA
 
 WL1$Word.bin = factor(ifelse(WL1$Word.Match <= mean(WL1$Word.Match,na.rm=T), 0, 1))
 
-WL1$Total = rowMeans(WL1[c('EJ1.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL1$Total = rowMeans(WL1[c('EJ1.Match','EJ2.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
 
 WL1$Total.red = rowMeans(WL1[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
 
@@ -364,7 +364,7 @@ chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'),
 pander(chance.table,style = 'rmarkdown')
 
 WL1.perf = WL1[c("EJ1.Match","Ask.Match","Word.Match","Subject")]
-names(WL1.perf) = c("Accuracy","Ask","Endorse","Participant")
+names(WL1.perf) = c("Judgment","Ask","Endorse","Participant")
 perf = melt(WL1.perf,id='Participant')
 names(perf) = c("Participant","Question Type","Proportion")
 
@@ -405,7 +405,7 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, fill = `Ques
 
 ```{r WL_figure_4_prev_study}
 
-performance.sub = data.frame(`Question Type`=c("Accuracy","Ask","Endorse"),
+performance.sub = data.frame(`Question Type`=c("Judgment","Ask","Endorse"),
                              Proportion=c(.71,.70,.67),
                              CI=c(.16,.12,.12))
 names(performance.sub) = c("Question Type","Proportion","CI")
@@ -474,7 +474,7 @@ chance.table = data.frame(Question = c('Ask','Endorse'),
 pander(chance.table,style = 'rmarkdown')
 
 WL1.perf = WL1.EJ1[c("EJ1.Match","Ask.Match","Word.Match","Subject")]
-names(WL1.perf) = c("Accuracy","Ask","Endorse","Participant")
+names(WL1.perf) = c("Judgment","Ask","Endorse","Participant")
 perf = melt(WL1.perf,id='Participant')
 names(perf) = c("Participant","Question Type","Proportion")
 
@@ -533,24 +533,30 @@ summary(glm(Total~AgIndex.cent+Age.cent,data=WL1))
 ```
 
 ###Correlation with Agency
-```{r WL1_correlations}
+```{r WL1_correlations, fig.height=4.5,fig.width=4.5}
 #Agency
 
 cor.test(WL1$Total,WL1$AgIndex)
 AgencyTotal.Data = data.frame(Endorsement = WL1$Total, Agency = WL1$AgIndex)
 
 ggplot(AgencyTotal.Data, aes(Agency,Endorsement)) + 
-  geom_point(position = position_jitter(w = 0.05, h = 0.05), size=4) + #, color=wes_palette(n=5, name=wesanderson)[1]) + 
-  geom_smooth(method=lm) + #, colour=wes_palette(n=5, name=wesanderson)[5], size=3) +
-  #scale_color_manual(values=wes_palette(n=1, name=wesanderson)) + 
+  geom_point(position = position_jitter(w = 0.05, h = 0.05), size=2) + #, color=wes_palette(n=5, name=wesanderson)[1]) + 
+  geom_smooth(method=lm, colour=wes_palette(n=1, name=wesanderson), size=1.5, se = F, fullrange=T) +
   labs(y="Proportion of Correct Responses") + 
-  theme(text = element_text(size=36,family="Helvetica",colour="black"),
-        axis.text.x = element_text(size=24,colour="black"),
+  theme(text = element_text(size=14,family="Helvetica",colour="black"),
+        axis.text.x = element_text(size=11,colour="black"),
         axis.title.x = element_text(vjust=0.1,colour="black"),
-        axis.text.y=element_text(angle=90, hjust=.5, size=20,colour="black"),
-        axis.title.y=element_text(margin=margin(0,20,0,0),colour="black"),
+        axis.text.y=element_text(angle=90, hjust=.5, size=10,colour="black"),
+        axis.title.y=element_text(margin=margin(0,10,0,0),colour="black"),
         plot.background = element_rect(fill = "transparent", colour = NA),
-        plot.margin = margin(10, 10, 10, 12))
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) +
+    scale_y_continuous(expand = c(0, 0), breaks=c(0,.25,.5,.75,1), limits=c(0,1.05)) +
+    scale_x_continuous(expand = c(0, 0), breaks=c(0,1,2,3), limits=c(-.1,3.1))
+
+
 ```
 
 #Word Learning 2: Control Study
@@ -695,7 +701,7 @@ WL2$Word.Orange[is.nan(WL2$Ask.Orange)]=NA
 
 WL2$Word.bin = factor(ifelse(WL2$Word.Match <= mean(WL2$Word.Match,na.rm=T), 0, 1))
 
-WL2$Total = rowMeans(WL2[c('EJ1.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL2$Total = rowMeans(WL2[c('EJ1.Match','EJ2.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
 
 WL2$Total.red = rowMeans(WL2[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
 
@@ -765,7 +771,6 @@ num_subs = dim(WL2)[1]
 
 #non-native english speaker
 WL2 = WL2[!grepl("Answered in foreign language. Very shy.",WL2$Comments),]
-#WL2 = WL2[!grepl("Speaks Portuguese at home",WL2$Comments),]
 ```
 
 `r num_subs-dim(WL2)[1]` participant was excluded for being a non-native english speaker.
@@ -776,7 +781,6 @@ num_subs = dim(WL2)[1]
 #ended early
 WL2 = WL2[!grepl("They arrived 20 minutes late and the mother tried to rush the entire interview. Had to end early because the interview was taking too long for the mother's liking",WL2$Comments),]
 WL2 = WL2[!grepl("Participant not focused at all, may have had a developmental disability",WL2$Comments),]
-WL2 = WL2[!grepl("Asked to stop",WL2$Comments),]
 #WL2 = WL2[WL2$Finish=="Finished the study normally",]
 ```
 
@@ -872,7 +876,7 @@ chance.table = data.frame(Question = c('Explicit judgment','Ask','Endorse'),
 pander(chance.table,style = 'rmarkdown')
 
 WL2.perf = WL2[c("EJ1.Match","Ask.Match","Word.Match","Subject")]
-names(WL2.perf) = c("Accuracy","Ask","Endorse","Participant")
+names(WL2.perf) = c("Judgment","Ask","Endorse","Participant")
 perf = melt(WL2.perf,id='Participant')
 names(perf) = c("Participant","Question Type","Proportion")
 
@@ -943,7 +947,7 @@ chance.table = data.frame(Question = c('Ask','Endorse'),
 pander(chance.table,style = 'rmarkdown')
 
 WL2sub.perf = WL2.EJ1[c("EJ1.Match","Ask.Match","Word.Match","Subject")]
-names(WL2sub.perf) = c("Accuracy","Ask","Endorse","Participant")
+names(WL2sub.perf) = c("Judgment","Ask","Endorse","Participant")
 perf = melt(WL2sub.perf,id='Participant')
 names(perf) = c("Participant","Question Type","Proportion")
 
@@ -991,7 +995,7 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, group = Samp
 
 `r dim(WL2.EJ1)[1]` out of `r dim(WL2)[1]` children answered the first explicit judgment question correctly.
 
-Children were still at chance for Ask, `r mean(WL2.EJ1$Ask.Match,na.rm=T)`, t(`r Ask.ttest$parameter`) = `r round(Ask.ttest$statistic,2)`, p = `r round(Ask.ttest$p.value,4)`, CI 95% [`r paste(round(Ask.ttest$conf.int[1],2), round(Ask.ttest$conf.int[2],2),sep=",")`]; and Endorsement questions, `r mean(WL2.EJ1$Word.Match,na.rm=T)`, t(`r Word.ttest$parameter`) = `r round(Word.ttest$statistic,2)`, p = `r round(Word.ttest$p.value,4)`, CI 95% [`r paste(round(Word.ttest$conf.int[1],2), round(Word.ttest$conf.int[2],2),sep=",")`].
+Children were still at chance for Ask, , t(`r Ask.ttest$parameter`) = `r round(Ask.ttest$statistic,2)`, p = `r round(Ask.ttest$p.value,4)`; and Endorsement questions, t(`r Word.ttest$parameter`) = `r round(Word.ttest$statistic,2)`, p = `r round(Word.ttest$p.value,4)`.
 
 ###Regression Analyses
 
@@ -1021,14 +1025,18 @@ AgencyTotal.Data = data.frame(Endorsement = WL2$Total, Agency = WL2$AgIndex)
 ggplot(AgencyTotal.Data, aes(Agency,Endorsement)) + 
   geom_point(position = position_jitter(w = 0.05, h = 0.05), size=4) + #, color=wes_palette(n=5, name=wesanderson)[1]) + 
   geom_smooth(method=lm) + #, colour=wes_palette(n=5, name=wesanderson)[5], size=3) +
-  #scale_color_manual(values=wes_palette(n=1, name=wesanderson)) + 
+  scale_color_manual(values=wes_palette(n=1, name=wesanderson)) + 
   labs(y="Proportion of Correct Responses") + 
   theme(text = element_text(size=36,family="Helvetica",colour="black"),
         axis.text.x = element_text(size=24,colour="black"),
         axis.title.x = element_text(vjust=0.1,colour="black"),
         axis.text.y=element_text(angle=90, hjust=.5, size=20,colour="black"),
         axis.title.y=element_text(margin=margin(0,20,0,0),colour="black"),
-        plot.background = element_rect(fill = "transparent", colour = NA))
+        plot.background = element_rect(fill = "transparent", colour = NA),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))
 ```
 
 
@@ -1063,24 +1071,32 @@ WL2.performance$type = "Machine"
 WL1.performance = WL1.performance[c("Attributions.of.Mind","x.mean","CI","type")]
 names(WL1.performance) = c("Attributions of Mind","Responses","CI","Agent")
 
-WL2.performance = WL2.performance[c("Attributions.of.Mind","x.mean","CI","type")]
-names(WL2.performance) = c("Attributions of Mind","Responses","CI","Agent")
+#WL2.performance = WL2.performance[c("Attributions.of.Mind","x.mean","CI","type")]
+#names(WL2.performance) = c("Attributions of Mind","Responses","CI","Agent")
 
-performance = rbind(WL1.performance,WL2.performance)
+#performance = rbind(WL1.performance,WL2.performance)
+performance = WL1.performance
 
-ggplot(data = performance, aes(x = `Attributions of Mind`, y = `Responses`, fill = `Agent`)) + 
-  geom_bar(width = .6, position=position_dodge(), stat="identity") + 
-  #scale_fill_manual(values=wes_palette(n=3, name=wesanderson)) +
+ggplot(data = performance, aes(x = `Attributions of Mind`, y = `Responses`, fill = `Attributions of Mind`)) +
+  guides(fill=FALSE) + 
+  scale_fill_manual(values=wes_palette(n=3, name=wesanderson)) +
+  geom_bar(width = .5, position=position_dodge(.65), stat="identity") + 
   geom_errorbar(aes(ymin=performance$Responses-performance$CI, ymax=performance$Responses+performance$CI),
-                width=.1,
-                size = 1.2, # Width of the error bars
-                position=position_dodge(.6)) + 
-  labs(y="Responses") +
-  theme(text = element_text(size=16,family="Helvetica"),
-        #axis.text.x = element_text(size=18),
-        axis.title.x = element_text(vjust=0.1,size=20),
-        axis.text.y=element_text(angle=90, hjust=.5, size=16),
-        axis.title.y=element_text(margin=margin(0,20,0,0),size=20))
+                        width=.1,
+                        size = 1, # Width of the error bars
+                        position=position_dodge(.65)) + 
+  theme(text = element_text(size=12,family="Helvetica",colour="black"),
+        axis.text.x = element_text(size=11,colour="black"),
+        axis.title.x = element_text(vjust=0.1,colour="black"),
+        axis.text.y=element_text(angle=90, hjust=.5, size=10,colour="black"),
+        axis.title.y=element_text(margin=margin(0,10,0,0),colour="black"),
+        plot.background = element_rect(fill = "transparent", colour = NA),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black")) + 
+  labs(y="Attributions of Mind") + 
+  scale_y_continuous(expand = c(0, 0), breaks=c(0,1,2,3), limits=c(0,3.05))
 
 agency.ttest = t.test(WL1.mind$Responses[WL1.mind$`Attributions of Mind`=="Agency"],WL2.mind$Responses[WL2.mind$`Attributions of Mind`=="Agency"],paired=FALSE)
 
