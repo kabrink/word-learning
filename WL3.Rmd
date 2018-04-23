@@ -1,6 +1,8 @@
 ---
 title: "Word Learning 3"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 "Word Learning 3" is an experiment examining how children selectively trust either a robot that was 75% accurate in the past compared to a robot that was 0% correct in the past. 
@@ -10,6 +12,7 @@ knitr::opts_chunk$set(fig.path='Figures/PS/', dev=c('svg','postscript'), fig.wid
 ```
 
 ```{r libraries}
+library(dplyr)
 library(lubridate)
 library(pander)
 library(ggplot2)
@@ -45,6 +48,8 @@ WL3 = WL3[,!grepl("Ins",names(WL3))]
 
 #remove specific columns
 WL3 = subset(WL3, select=-c(ResponseSet,Name,IPAddress,CANDY))
+
+WL3 = WL3[which(!is.na(WL3$StartTime)),]
 ```
 
 ```{r preprocessing}
@@ -54,6 +59,7 @@ WL3$Order[WL3$SubID=="301CM"] = "G"
 WL3 = WL3[!is.na(WL3$SubID),]
 WL3 = WL3[!grepl("test",WL3$SubID,ignore.case = T),]
 WL3 = WL3[!grepl("demo",WL3$SubID,ignore.case = T),]
+WL3 = WL3[which(WL3$Finish!="Ended early"),]
 
 WL3$DOB = mdy(WL3$DOB)
 WL3$StartTime = hms(WL3$StartTime)
@@ -66,18 +72,18 @@ WL3$Age = year(as.period(interval(WL3$DOB, WL3$EndDate))) +
   day(as.period(interval(WL3$DOB, WL3$EndDate)))/365
 ```
 
-```{r WL1_formatting}
+```{r WL3_formatting}
 #Clean the data set
 
 #Subset the data set by condition (i.e., by the order in which the robots are presented and by which robot is accurate)
-WL3.A <- subset(WL3, Order = "A")
-WL3.B <- subset(WL3, Order = "B")
-WL3.C <- subset(WL3, Order = "C")
-WL3.D <- subset(WL3, Order = "D")
-WL3.E <- subset(WL3, Order = "E")
-WL3.F <- subset(WL3, Order = "F")
-WL3.G <- subset(WL3, Order = "G")
-WL3.H <- subset(WL3, Order = "H")
+WL3.A <- WL3 %>% filter(Order=="A")
+WL3.B <- WL3 %>% filter(Order=="B")
+WL3.C <- WL3 %>% filter(Order=="C")
+WL3.D <- WL3 %>% filter(Order=="D")
+WL3.E <- WL3 %>% filter(Order=="E")
+WL3.F <- WL3 %>% filter(Order=="F")
+WL3.G <- WL3 %>% filter(Order=="G")
+WL3.H <- WL3 %>% filter(Order=="H")
 
 #remove columns with only NAs
 WL3.A <- WL3.A[,colSums(is.na(WL3.A))<nrow(WL3.A)]
@@ -115,20 +121,130 @@ names(WL3.H) = sub("BDFH.", "",names(WL3.H))
 names(WL3.H) = sub("H\\.", "",names(WL3.H))
 
 #Combine all data into one dataset
-WL3 <- rbind(WL3.A,WL3.B,WL3.C,WL3.D,WL3.E,WL3.F,WL3.G,WL3.H)
-```
+WL3 <- 
+  WL3.A %>% 
+  full_join(WL3.B) %>%
+  full_join(WL3.C) %>%
+  full_join(WL3.D) %>%
+  full_join(WL3.E) %>%
+  full_join(WL3.F) %>%
+  full_join(WL3.G) %>%
+  full_join(WL3.H)
 
-```{r RAs, eval=FALSE}
-#for giving to RAs for posters
-#WL3 = subset(WL3, select=-c(ResponseID,Status,StartDate,EndDate,Finished,Audio.Name,Audio))
-#WL3 = WL3[,!grepl("X",names(WL3))]
-#write.csv(WL3,"~/Dropbox/Research/Michigan/Dissertation - Robots/Word Learning/Private/WL3.csv")
+#rbind(WL3.A,WL3.B,WL3.C,WL3.D,WL3.E,WL3.F,WL3.G,WL3.H)
 ```
 
 ```{r clean}
-#check comments
-#finish variable
+WL3$AccurateRobot = factor(WL3$AccurateRobot)
+WL3$EJ1 = factor(WL3$EJ1)
+WL3$EJ2 = factor(WL3$EJ2)
+WL3$Ask1B = factor(WL3$Ask1B)
+WL3$Ask2B = factor(WL3$Ask2B)
+WL3$Ask3B = factor(WL3$Ask3B)
+WL3$Ask4B = factor(WL3$Ask4B)
+
+WL3$THINK = as.numeric(as.character(WL3$THINK)) - 1
+WL3$MORAL = as.numeric(as.character(WL3$MORAL)) - 1
+WL3$CHOOSE = as.numeric(as.character(WL3$CHOOSE)) - 1
+WL3$PAIN = as.numeric(as.character(WL3$PAIN)) - 1
+WL3$SCARED = as.numeric(as.character(WL3$SCARED)) - 1
+WL3$HUNGRY = as.numeric(as.character(WL3$HUNGRY)) - 1
+
+
 ```
+
+```{r variables}
+#Calculate whether children accurately answered all familiarization trials.
+WL3$Fam.Match = ifelse(WL3$Fam1=="Brush",1,0) + ifelse(WL3$Fam2=="Doll",1,0) + ifelse(WL3$Fam3=="Ball",1,0) + ifelse(WL3$Fam4=="Bear",1,0)
+
+#Calculate the proportion of answers where children accurately determined which robot was bad at naming the familiar objects 
+WL3$EJ1.Match = ifelse(WL3$EJ1!=WL3$AccurateRobot,1,0)
+WL3$EJ2.Match = ifelse(WL3$EJ2!=WL3$AccurateRobot,1,0)
+WL3$EJ.Match = rowMeans(WL3[c('EJ1.Match','EJ2.Match')],na.rm=T)
+WL3$EJ.Match[is.nan(WL3$EJ.Match)]=NA
+
+WL3$EJ1.Purple = ifelse(WL3$EJ1!="Purple",1,0)
+WL3$EJ2.Purple = ifelse(WL3$EJ2!="Purple",1,0)
+WL3$EJ.Purple = rowMeans(WL3[c('EJ1.Purple','EJ2.Purple')],na.rm=T)
+WL3$EJ.Purple[is.nan(WL3$EJ.Purple)]=NA
+
+WL3$EJ1.Orange = ifelse(WL3$EJ1!="Orange",1,0)
+WL3$EJ2.Orange = ifelse(WL3$EJ2!="Orange",1,0)
+WL3$EJ.Orange = rowMeans(WL3[c('EJ1.Orange','EJ2.Orange')],na.rm=T)
+WL3$EJ.Orange[is.nan(WL3$EJ.Orange)]=NA
+
+#Calculate the proportion of answers where children said they would ask the accurate robot for the name of the novel object
+WL3$Ask1B.Match = ifelse(WL3$Ask1B==WL3$AccurateRobot,1,0)
+WL3$Ask2B.Match = ifelse(WL3$Ask2B==WL3$AccurateRobot,1,0)
+WL3$Ask3B.Match = ifelse(WL3$Ask3B==WL3$AccurateRobot,1,0)
+WL3$Ask4B.Match = ifelse(WL3$Ask4B==WL3$AccurateRobot,1,0)
+WL3$Ask.Match = rowMeans(WL3[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match')],na.rm=T)
+WL3$Ask.Match[is.nan(WL3$Ask.Match)]=NA
+
+WL3$Ask1B.Purple = ifelse(WL3$Ask1B=='Purple',1,0)
+WL3$Ask2B.Purple = ifelse(WL3$Ask2B=='Purple',1,0)
+WL3$Ask3B.Purple = ifelse(WL3$Ask3B=='Purple',1,0)
+WL3$Ask4B.Purple = ifelse(WL3$Ask4B=='Purple',1,0)
+WL3$Ask.Purple = rowMeans(WL3[c('Ask1B.Purple','Ask2B.Purple','Ask3B.Purple','Ask4B.Purple')],na.rm=T)
+WL3$Ask.Purple[is.nan(WL3$Ask.Purple)]=NA
+
+WL3$Ask1B.Orange = ifelse(WL3$Ask1B=='Orange',1,0)
+WL3$Ask2B.Orange = ifelse(WL3$Ask2B=='Orange',1,0)
+WL3$Ask3B.Orange = ifelse(WL3$Ask3B=='Orange',1,0)
+WL3$Ask4B.Orange = ifelse(WL3$Ask4B=='Orange',1,0)
+WL3$Ask.Orange = rowMeans(WL3[c('Ask1B.Orange','Ask2B.Orange','Ask3B.Orange','Ask4B.Orange')],na.rm=T)
+WL3$Ask.Orange[is.nan(WL3$Ask.Orange)]=NA
+
+WL3$Ask.bin = factor(ifelse(WL3$Ask.Match <= mean(WL3$Ask.Match,na.rm=T), 0, 1))
+
+#Calculate the proportion of answers where children chose the same name that the accurate robot chose
+WL3$Ask1C.Match = ifelse(WL3$Ask1C==WL3$AccurateRobot,1,0)
+WL3$Ask2C.Match = ifelse(WL3$Ask2C==WL3$AccurateRobot,1,0)
+WL3$Ask3C.Match = ifelse(WL3$Ask3C==WL3$AccurateRobot,1,0)
+WL3$Ask4C.Match = ifelse(WL3$Ask4C==WL3$AccurateRobot,1,0)
+WL3$Endorse.Match = rowMeans(WL3[c('Ask1C.Match','Ask2C.Match','Ask3C.Match','Ask4C.Match')],na.rm=T)
+WL3$Endorse.Match[is.nan(WL3$Ask.Match)]=NA
+
+WL3$Ask1C.Purple = ifelse(WL3$Ask1C=='Purple',1,0)
+WL3$Ask2C.Purple = ifelse(WL3$Ask2C=='Purple',1,0)
+WL3$Ask3C.Purple = ifelse(WL3$Ask3C=='Purple',1,0)
+WL3$Ask4C.Purple = ifelse(WL3$Ask4C=='Purple',1,0)
+WL3$Endorse.Purple = rowMeans(WL3[c('Ask1C.Purple','Ask2C.Purple','Ask3C.Purple','Ask4C.Purple')],na.rm=T)
+WL3$Endorse.Purple[is.nan(WL3$Ask.Purple)]=NA
+
+WL3$Ask1C.Orange = ifelse(WL3$Ask1C=='Orange',1,0)
+WL3$Ask2C.Orange = ifelse(WL3$Ask2C=='Orange',1,0)
+WL3$Ask3C.Orange = ifelse(WL3$Ask3C=='Orange',1,0)
+WL3$Ask4C.Orange = ifelse(WL3$Ask4C=='Orange',1,0)
+WL3$Endorse.Orange = rowMeans(WL3[c('Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL3$Endorse.Orange[is.nan(WL3$Ask.Orange)]=NA
+
+WL3$Endorse.bin = factor(ifelse(WL3$Endorse.Match <= mean(WL3$Endorse.Match,na.rm=T), 0, 1))
+
+WL3$Total = rowMeans(WL3[c('EJ1.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Match','Ask2C.Match','Ask3C.Match','Ask4C.Match')],na.rm=T)
+
+WL3$Total.red = rowMeans(WL3[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Match','Ask2C.Match','Ask3C.Match','Ask4C.Match')],na.rm=T)
+
+WL3$Agency = (WL3$THINK+WL3$MORAL+WL3$CHOOSE)/3
+WL3$Experience = (WL3$PAIN+WL3$SCARED+WL3$HUNGRY)/3
+```
+
+
+```{r RAs, eval=FALSE}
+#for giving to RAs for posters
+WL3.RA = 
+  WL3 %>%
+  dplyr::select(SubID, Sex, Age, 
+                AccurateRobot, Order, 
+                EJ1.Match,
+                Ask.Match,
+                Endorse.Match, 
+                Agency, 
+                Experience)
+
+write.csv(WL3.RA,"~/Dropbox/Research/Michigan/Dissertation - Robots/Word Learning/Private/WL3.csv")
+```
+
 
 
 

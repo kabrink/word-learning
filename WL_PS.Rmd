@@ -179,9 +179,9 @@ WL1$Word.Orange[is.nan(WL1$Ask.Orange)]=NA
 
 WL1$Word.bin = factor(ifelse(WL1$Word.Match <= mean(WL1$Word.Match,na.rm=T), 0, 1))
 
-WL1$Total = rowMeans(WL1[c('EJ1.Match','EJ2.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL1$Total = rowMeans(WL1[c('EJ1.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Match','Ask2C.Match','Ask3C.Match','Ask4C.Match')],na.rm=T)
 
-WL1$Total.red = rowMeans(WL1[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL1$Total.red = rowMeans(WL1[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Match','Ask2C.Match','Ask3C.Match','Ask4C.Match')],na.rm=T)
 
 WL1$Total.bin = factor(ifelse(WL1$Total <= mean(WL1$Total,na.rm=T), 0, 1))
 ```
@@ -441,7 +441,7 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, group = Cond
 ```
 
 
-Children’s scores ranged from `r min(WL1$Total)` to `r max(WL1$Total)` (M = `r round(mean(WL1$Total),2)`, SD = `r round(sd(WL1$Total),2)`)
+Children’s total performance scores ranged from `r min(WL1$Total.red)` to `r max(WL1$Total.red)` (M = `r round(mean(WL1$Total.red),2)`, SD = `r round(sd(WL1$Total.red),2)`)
 
 ###Comparisons with chance for three test questions for subset that answered first EJ question correctly.
 ```{r WL1_subset_analysis, fig.height=4.5,fig.width=4.5}
@@ -530,6 +530,18 @@ pander(summary(lm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
 lm.beta(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
 
 summary(glm(Total~AgIndex.cent+Age.cent,data=WL1))
+```
+
+```{r WL1_regressions_red}
+summary(glm(Total.red~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
+pander(summary(lm(Total.red~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1)))
+lm.beta(glm(Total.red~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
+
+summary(glm(scale(Total.red)~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL1))
+
+summary(glm(Total.red~AgIndex.cent+Age.cent+Order,data=WL1))
+
+cor.test(WL1$Total.red,WL1$AgIndex)
 ```
 
 ###Correlation with Agency
@@ -701,9 +713,9 @@ WL2$Word.Orange[is.nan(WL2$Ask.Orange)]=NA
 
 WL2$Word.bin = factor(ifelse(WL2$Word.Match <= mean(WL2$Word.Match,na.rm=T), 0, 1))
 
-WL2$Total = rowMeans(WL2[c('EJ1.Match','EJ2.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL2$Total = rowMeans(WL2[c('EJ1.Match','Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Match','Ask2C.Match','Ask3C.Match','Ask4C.Match')],na.rm=T)
 
-WL2$Total.red = rowMeans(WL2[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Orange','Ask2C.Orange','Ask3C.Orange','Ask4C.Orange')],na.rm=T)
+WL2$Total.red = rowMeans(WL2[c('Ask1B.Match','Ask2B.Match','Ask3B.Match','Ask4B.Match','Ask1C.Match','Ask2C.Match','Ask3C.Match','Ask4C.Match')],na.rm=T)
 
 WL2$Total.bin = factor(ifelse(WL2$Total <= mean(WL2$Total,na.rm=T), 0, 1))
 ```
@@ -915,7 +927,7 @@ ggplot(data = performance, aes(x = `Question Type`, y = Proportion, fill = `Ques
   scale_y_continuous(expand = c(0, 0), breaks=c(0,.25,.5,.75,1), limits=c(0,1.05))
 ```
 
-Children’s scores ranged from `r min(WL2$Total)` to `r max(WL2$Total)` (M = `r round(mean(WL2$Total),2)`, SD = `r round(sd(WL2$Total),2)`)
+Children’s total performance scores ranged from `r min(WL2$Total.red)` to `r max(WL2$Total.red)` (M = `r round(mean(WL2$Total.red),2)`, SD = `r round(sd(WL2$Total.red),2)`)
 
 ###Comparisons with chance for three test questions for subset that answered first EJ question correctly.
 ```{r WL2_subset_analysis, fig.height=4.5,fig.width=4.5}
@@ -1014,6 +1026,17 @@ pander(summary(lm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL2))
 lm.beta(glm(Total~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL2))
 
 summary(glm(Total~AgIndex.cent+Age.cent,data=WL2))
+```
+
+```{r WL2_regressions_red}
+summary(glm(Total.red~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL2))
+pander(summary(lm(Total.red~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL2)))
+lm.beta(glm(Total.red~ExpIndex.cent+AgIndex.cent+Age.cent+Sex+Order,data=WL2))
+
+
+
+
+summary(glm(Total.red~AgIndex.cent+Age.cent,data=WL2))
 ```
 
 ###Correlation with Agency
